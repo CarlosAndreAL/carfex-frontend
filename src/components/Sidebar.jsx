@@ -45,16 +45,25 @@ export default function Sidebar({ mobile = false, onNavigate = null }) {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-4">
-            <div className="absolute inset-0 bg-gradient-to-br from-sky-500/10 via-transparent to-cyan-400/10" />
-            <div className="relative flex justify-center">
-              <img
-                src={logo}
-                alt="CARFEX"
-                className={`${mobile ? "w-36" : "w-40"} drop-shadow-[0_0_18px_rgba(56,189,248,0.22)]`}
-              />
+          <motion.div
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+            className="group relative"
+          >
+            <div className="absolute inset-0 rounded-3xl bg-sky-500/0 blur-2xl transition-all duration-500 group-hover:bg-sky-500/20" />
+
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-4 transition-all duration-300 group-hover:border-sky-400/70 group-hover:bg-slate-900/80 group-hover:shadow-[0_0_35px_rgba(56,189,248,0.22)]">
+              <div className="absolute inset-0 bg-gradient-to-br from-sky-500/10 via-transparent to-cyan-400/10 opacity-80 transition duration-300 group-hover:opacity-100" />
+
+              <div className="relative flex justify-center">
+                <img
+                  src={logo}
+                  alt="CARFEX"
+                  className={`${mobile ? "w-36" : "w-40"} transition duration-300 group-hover:scale-105 drop-shadow-[0_0_18px_rgba(56,189,248,0.22)]`}
+                />
+              </div>
             </div>
-          </div>
+          </motion.div>
 
           <div className="mt-4 text-center">
             <p className="text-sm font-semibold tracking-wide text-white">CARFEX</p>
