@@ -124,7 +124,7 @@ export default function Layout({ title = "Painel", children }) {
                   </button>
                 </div>
 
-                <Sidebar />
+                <Sidebar mobile onNavigate={() => setMenuOpen(false)} />
               </motion.div>
             </>
           )}
