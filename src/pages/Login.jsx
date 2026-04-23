@@ -1,9 +1,16 @@
+import { Link, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, ArrowRight, Sparkles } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import {
+  ShieldCheck,
+  ArrowRight,
+  Sparkles,
+  LockKeyhole,
+  UserRound,
+  Building2,
+} from "lucide-react";
 import logo from "../assets/logo.png";
+import API_URL from "../config/api";
 
 function FloatingParticle({ delay, duration, left, top, size }) {
   return (
@@ -66,7 +73,7 @@ function LoadingOverlay() {
           <p className="text-sm uppercase tracking-[0.25em] text-sky-300">
             CARFEX
           </p>
-          <p className="mt-2 text-lg text-white">Carregando painel interno...</p>
+          <p className="mt-2 text-lg text-white">Validando acesso interno...</p>
         </motion.div>
 
         <div className="mt-6 h-1.5 w-64 overflow-hidden rounded-full bg-white/10">
@@ -82,21 +89,58 @@ function LoadingOverlay() {
   );
 }
 
+const inputClass =
+  "w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400/50 focus:ring-2 focus:ring-sky-400/20";
+
 export default function Login() {
   const navigate = useNavigate();
-  const { loginInterno } = useAuth();
 
   const [mouse, setMouse] = useState({ x: 50, y: 50 });
   const [rotate, setRotate] = useState({ rx: 0, ry: 0 });
   const [entrando, setEntrando] = useState(false);
+  const [mostrarLoginAdmin, setMostrarLoginAdmin] = useState(false);
+  const [erroAdmin, setErroAdmin] = useState("");
+  const [adminForm, setAdminForm] = useState({
+    login: "",
+    senha: "",
+  });
 
-  function entrar() {
-    loginInterno();
-    setEntrando(true);
+  function handleAdminChange(e) {
+    const { name, value } = e.target;
+    setAdminForm((prev) => ({ ...prev, [name]: value }));
+  }
 
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 1200);
+  async function entrarAdmin(e) {
+    e.preventDefault();
+    setErroAdmin("");
+
+    try {
+      const response = await fetch(`${API_URL}/admin-auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(adminForm),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.erro || "Erro ao fazer login interno");
+      }
+
+      localStorage.setItem("carfex_token", data.token);
+      localStorage.setItem("carfex_user", JSON.stringify(data.user));
+
+      setEntrando(true);
+
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
+    } catch (error) {
+      console.error(error);
+      setErroAdmin(error.message || "Erro ao fazer login interno");
+    }
   }
 
   function handleMouseMove(e) {
@@ -168,7 +212,7 @@ export default function Login() {
                   className="mb-8 inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-400/10 px-4 py-2 text-sm text-sky-300"
                 >
                   <Sparkles className="h-4 w-4" />
-                  Sistema interno premium
+                  Plataforma premium CARFEX
                 </motion.div>
 
                 <motion.div
@@ -198,14 +242,15 @@ export default function Login() {
 
                 <p className="mt-6 max-w-xl text-base leading-7 text-slate-300 md:text-lg">
                   Controle clientes, veículos, contratos, multas e locações em
-                  um painel interno com visual premium, acesso rápido e
-                  presença de sistema de alto padrão.
+                  um painel interno premium e ofereça transparência total aos
+                  investidores da sua operação.
                 </p>
               </div>
 
               <div className="mt-10 grid gap-4">
                 <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-5 text-slate-300 shadow-inner shadow-sky-500/5">
-                  Painel privado com fluxo ágil para a rotina da equipe interna.
+                  Plataforma com acesso separado para equipe interna e portal do
+                  investidor.
                 </div>
               </div>
             </div>
@@ -217,31 +262,88 @@ export default function Login() {
                 </div>
 
                 <h2 className="text-3xl font-bold text-white md:text-5xl">
-                  Entrar no sistema
+                  Escolha seu acesso
                 </h2>
 
                 <p className="mt-4 text-base leading-7 text-slate-400">
-                  Acesso direto ao painel operacional da empresa, sem login
-                  tradicional, com entrada rápida para uso interno.
+                  A área interna da empresa agora exige autenticação. O portal do
+                  investidor permanece separado para garantir segurança e
+                  organização total do sistema.
                 </p>
 
                 <div className="mt-8 space-y-4">
                   <motion.button
-                    whileHover={{ y: -4, scale: 1.01 }}
+                    whileHover={{ y: -3, scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
-                    onClick={entrar}
-                    className="group relative flex w-full items-center justify-center overflow-hidden rounded-2xl bg-white px-6 py-5 text-lg font-semibold text-slate-950 shadow-[0_20px_50px_rgba(255,255,255,0.12)] transition hover:bg-slate-100"
+                    onClick={() => setMostrarLoginAdmin((prev) => !prev)}
+                    className="group relative flex w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-base font-semibold text-white transition hover:border-sky-400/20 hover:bg-white/10"
                   >
-                    <span className="absolute inset-0 -translate-x-[120%] bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.75),transparent)] transition duration-1000 group-hover:translate-x-[120%]" />
                     <span className="relative z-10 flex items-center gap-3">
-                      <ShieldCheck className="h-5 w-5" />
-                      Acessar sistema
+                      <Building2 className="h-5 w-5" />
+                      Área interna da empresa
                       <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
                     </span>
                   </motion.button>
 
+                  <AnimatePresence>
+                    {mostrarLoginAdmin && (
+                      <motion.form
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        onSubmit={entrarAdmin}
+                        className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4"
+                      >
+                        <div className="relative">
+                          <UserRound className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <input
+                            name="login"
+                            value={adminForm.login}
+                            onChange={handleAdminChange}
+                            placeholder="Login interno"
+                            className={`${inputClass} pl-11`}
+                          />
+                        </div>
+
+                        <div className="relative">
+                          <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <input
+                            name="senha"
+                            type="password"
+                            value={adminForm.senha}
+                            onChange={handleAdminChange}
+                            placeholder="Senha"
+                            className={`${inputClass} pl-11`}
+                          />
+                        </div>
+
+                        {erroAdmin && (
+                          <div className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                            {erroAdmin}
+                          </div>
+                        )}
+
+                        <button
+                          type="submit"
+                          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-100"
+                        >
+                          <ShieldCheck className="h-4 w-4" />
+                          Entrar na área interna
+                        </button>
+                      </motion.form>
+                    )}
+                  </AnimatePresence>
+
+                  <Link
+                    to="/investidor/login"
+                    className="flex w-full items-center justify-center rounded-2xl border border-sky-400/20 bg-sky-500/10 px-5 py-3 text-sm font-semibold text-sky-300 transition hover:bg-sky-500/20"
+                  >
+                    Acesso do investidor
+                  </Link>
+
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-sm leading-7 text-slate-400">
-                    Ambiente interno • operação CARFEX • acesso premium
+                    Área administrativa protegida • portal do investidor separado •
+                    experiência premium CARFEX
                   </div>
                 </div>
               </div>

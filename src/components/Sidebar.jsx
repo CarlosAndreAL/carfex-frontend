@@ -1,3 +1,4 @@
+import { Landmark } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -12,6 +13,7 @@ import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
 
 const menuItems = [
+  { to: "/investidores", label: "Investidores", icon: Landmark, adminOnly: false },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, adminOnly: false },
   { to: "/clientes", label: "Clientes", icon: Users, adminOnly: false },
   { to: "/veiculos", label: "Veículos", icon: CarFront, adminOnly: false },

@@ -1,2 +1,2 @@
-const API_URL = "https://carfex-backend-docker.onrender.com";
+const API_URL = "http://localhost:3001";
 export default API_URL;
