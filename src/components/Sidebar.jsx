@@ -8,6 +8,7 @@ import {
   ReceiptText,
   FileWarning,
   ChevronRight,
+  Wallet,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
@@ -18,6 +19,7 @@ const menuItems = [
   { to: "/clientes", label: "Clientes", icon: Users, adminOnly: false },
   { to: "/veiculos", label: "Veículos", icon: CarFront, adminOnly: false },
   { to: "/locacoes", label: "Locações", icon: ReceiptText, adminOnly: false },
+  { to: "/repasses-investidores", label: "Repasses", icon: Wallet, adminOnly: false },
   { to: "/multas", label: "Multas", icon: FileWarning, adminOnly: false },
 ];
 
