@@ -11,6 +11,7 @@ import {
   Mail,
   Phone,
   ShieldCheck,
+  Wallet,
   Trash2,
   UserRound,
   WalletCards,
@@ -84,6 +85,7 @@ export default function Investidores() {
     cpfCnpj: "",
     senha: "",
     status: "ATIVO",
+    investimentoTotal: "",
   });
 
   async function carregarDados() {
@@ -383,6 +385,19 @@ export default function Investidores() {
                     className={`${inputClass} pl-11`}
                   />
                 </div>
+
+                <div className="relative">
+                  <Wallet className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+  
+                   <input
+                   name="investimentoTotal"
+                   type="number"
+                   value={form.investimentoTotal}
+                   onChange={handleChange}
+                   placeholder="Valor investido (R$)"
+                   className={`${inputClass} pl-11`}
+                       />
+                         </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-[1fr_220px]">

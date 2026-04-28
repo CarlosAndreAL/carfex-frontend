@@ -95,9 +95,9 @@ function createWindow() {
   });
 
   if (isDev) {
-    mainWindow.loadURL(FRONTEND_DEV_URL);
+    mainWindow.loadURL("https://carfex-frontend.onrender.com");
   } else {
-    mainWindow.loadFile(path.join(__dirname, "..", "dist", "index.html"));
+    mainWindow.loadURL("https://carfex-frontend.onrender.com");
   }
 }
 
