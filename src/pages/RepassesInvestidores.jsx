@@ -40,6 +40,7 @@ export default function RepassesInvestidores() {
     valorLiquido: "",
     status: "PENDENTE",
     observacoes: "",
+    tipo: "REPASSE",
   });
 
   async function carregarDados() {
@@ -295,6 +296,16 @@ export default function RepassesInvestidores() {
                   className={inputClass}
                 />
               </div>
+
+              <select
+  name="tipo"
+  value={form.tipo}
+  onChange={handleChange}
+  className={inputClass}
+>
+  <option value="REPASSE">Repasse do investidor</option>
+  <option value="MANUTENCAO">Repasse de manutenção</option>
+</select>
 
               <select
                 name="status"
