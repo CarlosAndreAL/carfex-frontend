@@ -239,6 +239,13 @@ export default function Investidores() {
     (item) => !item.investidorId
   ).length;
 
+  function brl(valor) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(Number(valor || 0));
+}
+
   const veiculosLivres = useMemo(
     () => veiculos.filter((veiculo) => !veiculo.investidorId),
     [veiculos]
@@ -520,71 +527,108 @@ export default function Investidores() {
             </div>
           ) : (
             <div className="grid gap-4 xl:grid-cols-2">
-              {investidores.map((investidor, index) => (
-                <motion.div
-                  key={investidor.id}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.04 }}
-                  className="rounded-[28px] border border-white/10 bg-slate-900/60 p-5"
+              {investidores.map((investidor, index) => {
+  const totalRecebido = Number(investidor.totalRecebido || 0);
+  const percentual = Number(investidor.percentual || 0);
+
+  return (
+    <motion.div
+      key={investidor.id}
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04 }}
+      className="rounded-[28px] border border-white/10 bg-slate-900/60 p-5"
+    >
+      <div className="flex flex-col gap-4">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-lg font-semibold text-white">
+              {investidor.nome}
+            </p>
+            <p className="mt-1 text-sm text-slate-400">
+              {investidor.email}
+            </p>
+          </div>
+
+          <StatusBadge status={investidor.status} />
+        </div>
+
+        <div className="grid gap-3 text-sm text-slate-400 md:grid-cols-2">
+          <p>Telefone: {investidor.telefone || "-"}</p>
+          <p>CPF/CNPJ: {investidor.cpfCnpj || "-"}</p>
+          <p>Veículos: {investidor.veiculos?.length || 0}</p>
+          <p>ID: {investidor.id}</p>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-2xl border border-cyan-400/10 bg-cyan-400/10 p-4">
+            <p className="text-xs text-slate-400">Investido</p>
+            <p className="mt-1 text-lg font-bold text-white">
+              {brl(investidor.investimentoTotal)}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-emerald-400/10 bg-emerald-400/10 p-4">
+            <p className="text-xs text-slate-400">Retornado</p>
+            <p className="mt-1 text-lg font-bold text-white">
+              {brl(totalRecebido)}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-purple-400/10 bg-purple-400/10 p-4">
+            <p className="text-xs text-slate-400">ROI</p>
+            <p className="mt-1 text-lg font-bold text-white">
+              {percentual.toFixed(2)}%
+            </p>
+          </div>
+        </div>
+
+        <div className="h-2 overflow-hidden rounded-full bg-white/10">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400"
+            style={{
+              width: `${Math.min(percentual, 100)}%`,
+            }}
+          />
+        </div>
+
+        {investidor.veiculos?.length > 0 ? (
+          <div>
+            <p className="mb-2 text-sm font-medium text-slate-300">
+              Veículos vinculados
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+              {investidor.veiculos.map((veiculo) => (
+                <span
+                  key={veiculo.id}
+                  className="rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1 text-xs text-sky-200"
                 >
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-lg font-semibold text-white">
-                          {investidor.nome}
-                        </p>
-                        <p className="mt-1 text-sm text-slate-400">
-                          {investidor.email}
-                        </p>
-                      </div>
-
-                      <StatusBadge status={investidor.status} />
-                    </div>
-
-                    <div className="grid gap-3 text-sm text-slate-400 md:grid-cols-2">
-                      <p>Telefone: {investidor.telefone || "-"}</p>
-                      <p>CPF/CNPJ: {investidor.cpfCnpj || "-"}</p>
-                      <p>Veículos: {investidor.veiculos?.length || 0}</p>
-                      <p>ID: {investidor.id}</p>
-                    </div>
-
-                    {investidor.veiculos?.length > 0 ? (
-                      <div>
-                        <p className="mb-2 text-sm font-medium text-slate-300">
-                          Veículos vinculados
-                        </p>
-
-                        <div className="flex flex-wrap gap-2">
-                          {investidor.veiculos.map((veiculo) => (
-                            <span
-                              key={veiculo.id}
-                              className="rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1 text-xs text-sky-200"
-                            >
-                              {veiculo.marca} {veiculo.modelo} - {veiculo.placa}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-400">
-                        Nenhum veículo vinculado.
-                      </div>
-                    )}
-
-                    <div className="pt-1">
-                      <button
-                        type="button"
-                        onClick={() => excluirInvestidor(investidor.id)}
-                        className="inline-flex items-center gap-2 rounded-2xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-400"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Excluir investidor
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
+                  {veiculo.marca} {veiculo.modelo} - {veiculo.placa}
+                </span>
               ))}
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-400">
+            Nenhum veículo vinculado.
+          </div>
+        )}
+
+        <div className="pt-1">
+          <button
+            type="button"
+            onClick={() => excluirInvestidor(investidor.id)}
+            className="inline-flex items-center gap-2 rounded-2xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-400"
+          >
+            <Trash2 className="h-4 w-4" />
+            Excluir investidor
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+})}
             </div>
           )}
         </section>
