@@ -385,16 +385,25 @@ export default function RepassesInvestidores() {
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-bold text-cyan-300">
-                            <User className="h-3.5 w-3.5" />
-                            {repasse.investidor?.nome || "Investidor"}
-                          </span>
+  <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-bold text-cyan-300">
+    {repasse.investidor?.nome || "Investidor"}
+  </span>
 
-                          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold text-slate-300">
-                            <CarFront className="h-3.5 w-3.5" />
-                            {repasse.veiculo?.placa || "-"}
-                          </span>
-                        </div>
+  <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold text-slate-300">
+    {repasse.veiculo?.placa || "-"}
+  </span>
+
+  {/* 🔥 AQUI É O NOVO */}
+  <span
+    className={`rounded-full px-3 py-1 text-xs font-bold ${
+      repasse.tipo === "MANUTENCAO"
+        ? "border border-amber-400/20 bg-amber-400/10 text-amber-300"
+        : "border border-sky-400/20 bg-sky-400/10 text-sky-300"
+    }`}
+  >
+    {repasse.tipo === "MANUTENCAO" ? "MANUTENÇÃO" : "REPASSE"}
+  </span>
+</div>
 
                         <h3 className="mt-3 text-xl font-black">
                           {brl(repasse.valorLiquido)}
