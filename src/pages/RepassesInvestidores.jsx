@@ -82,12 +82,20 @@ export default function RepassesInvestidores() {
   }, [veiculos, form.investidorId]);
 
   const totalPago = repasses
-    .filter((r) => String(r.status).toUpperCase() === "PAGO")
-    .reduce((total, r) => total + Number(r.valorLiquido || 0), 0);
+  .filter(
+    (r) =>
+      String(r.status).toUpperCase() === "PAGO" &&
+      r.tipo !== "MANUTENCAO"
+  )
+  .reduce((total, r) => total + Number(r.valorLiquido || 0), 0);
 
   const totalPendente = repasses
-    .filter((r) => String(r.status).toUpperCase() !== "PAGO")
-    .reduce((total, r) => total + Number(r.valorLiquido || 0), 0);
+  .filter(
+    (r) =>
+      String(r.status).toUpperCase() !== "PAGO" &&
+      r.tipo !== "MANUTENCAO"
+  )
+  .reduce((total, r) => total + Number(r.valorLiquido || 0), 0);
 
   async function salvarRepasse(e) {
     e.preventDefault();
@@ -118,15 +126,16 @@ export default function RepassesInvestidores() {
       }
 
       setForm({
-        investidorId: "",
-        veiculoId: "",
-        referenciaMes: "",
-        referenciaSemana: "",
-        valorBruto: "",
-        valorLiquido: "",
-        status: "PENDENTE",
-        observacoes: "",
-      });
+  investidorId: "",
+  veiculoId: "",
+  referenciaMes: "",
+  referenciaSemana: "",
+  valorBruto: "",
+  valorLiquido: "",
+  status: "PENDENTE",
+  observacoes: "",
+  tipo: "REPASSE", // 🔥 ESSENCIAL
+});
 
       setComprovante(null);
       setMensagem("Repasse lançado com sucesso.");
