@@ -153,29 +153,43 @@ export default function Locacoes() {
   }
 
   async function carregarDados() {
-    try {
-      const [resClientes, resVeiculos, resLocacoes] = await Promise.all([
-        fetch("https://carfex-backend.onrender.com/clientes"),
-        fetch("https://carfex-backend.onrender.com/veiculos"),
-        fetch("https://carfex-backend.onrender.com/locacoes"),
-      ]);
+  try {
+    const urls = [
+      [`${API_URL}/clientes`, "clientes"],
+      [`${API_URL}/veiculos`, "veiculos"],
+      [`${API_URL}/locacoes`, "locacoes"],
+    ];
 
-      const clientesData = await resClientes.json();
-      const veiculosData = await resVeiculos.json();
-      const locacoesData = await resLocacoes.json();
+    const respostas = await Promise.all(
+      urls.map(async ([url, nome]) => {
+        const res = await fetch(url);
+        const texto = await res.text();
 
-      setClientes(Array.isArray(clientesData) ? clientesData : []);
-      setVeiculos(Array.isArray(veiculosData) ? veiculosData : []);
-      setLocacoes(Array.isArray(locacoesData) ? locacoesData : []);
-    } catch (error) {
-      console.error(error);
-      setClientes([]);
-      setVeiculos([]);
-      setLocacoes([]);
-      mostrarMensagem("Erro ao carregar dados");
-    }
+        if (!res.ok) {
+          throw new Error(`Erro em ${nome}: ${res.status} - ${texto}`);
+        }
+
+        try {
+          return JSON.parse(texto);
+        } catch {
+          throw new Error(`Resposta inválida em ${nome}: ${texto.slice(0, 80)}`);
+        }
+      })
+    );
+
+    const [clientesData, veiculosData, locacoesData] = respostas;
+
+    setClientes(Array.isArray(clientesData) ? clientesData : []);
+    setVeiculos(Array.isArray(veiculosData) ? veiculosData : []);
+    setLocacoes(Array.isArray(locacoesData) ? locacoesData : []);
+  } catch (error) {
+    console.error("ERRO AO CARREGAR DADOS:", error);
+    setClientes([]);
+    setVeiculos([]);
+    setLocacoes([]);
+    mostrarMensagem(error.message || "Erro ao carregar dados");
   }
-
+}
   useEffect(() => {
     carregarDados();
   }, []);
@@ -287,7 +301,7 @@ export default function Locacoes() {
     try {
       setSalvando(true);
 
-      const response = await fetch("https://carfex-backend.onrender.com/locacoes", {
+      const response = await fetch(`${API_URL}/locacoes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -343,7 +357,7 @@ export default function Locacoes() {
 
   async function finalizarLocacao(id) {
     try {
-      const response = await fetch(`https://carfex-backend.onrender.com/locacoes/${id}/finalizar`, {
+      const response = await fetch(`${API_URL}/locacoes/${id}/finalizar`, {
         method: "PATCH",
       });
 
@@ -366,7 +380,7 @@ export default function Locacoes() {
     if (!confirmar) return;
 
     try {
-      const response = await fetch(`https://carfex-backend.onrender.com/locacoes/${id}`, {
+      const response = await fetch(`${API_URL}/locacoes/${id}`, {
         method: "DELETE",
       });
 
@@ -391,7 +405,7 @@ function baixarContratoDocx(id) {
   }
 
   window.open(
-    `https://carfex-backend-docker.onrender.com/locacoes/${id}/contrato-docx`,
+    `${API_URL}/locacoes/${id}/contrato-docx`,
     "_blank"
   );
 }
@@ -403,7 +417,7 @@ function baixarContratoPdf(id) {
   }
 
   window.open(
-    `https://carfex-backend-docker.onrender.com/locacoes/${id}/contrato-pdf`,
+    `${API_URL}/locacoes/${id}/contrato-pdf`,
     "_blank"
   );
 }

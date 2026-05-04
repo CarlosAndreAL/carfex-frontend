@@ -33,18 +33,13 @@ export default function Layout({ title = "Painel", children }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const intervalo = setInterval(() => {
-      setAgora(new Date());
-    }, 30000);
-
+    const intervalo = setInterval(() => setAgora(new Date()), 30000);
     return () => clearInterval(intervalo);
   }, []);
 
   useEffect(() => {
     function handleResize() {
-      if (window.innerWidth >= 1024) {
-        setMenuOpen(false);
-      }
+      if (window.innerWidth >= 1024) setMenuOpen(false);
     }
 
     window.addEventListener("resize", handleResize);
@@ -65,9 +60,7 @@ export default function Layout({ title = "Painel", children }) {
 
   function handleLogout() {
     try {
-      if (typeof logout === "function") {
-        logout();
-      }
+      if (typeof logout === "function") logout();
 
       localStorage.removeItem("user");
       localStorage.removeItem("auth");
@@ -86,7 +79,11 @@ export default function Layout({ title = "Painel", children }) {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <div className="flex min-h-screen">
+      <div className="fixed inset-0 -z-10 bg-slate-950" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(37,99,235,0.16),transparent_36%)]" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:58px_58px]" />
+
+      <div className="flex min-h-screen bg-slate-950">
         <div className="hidden lg:block">
           <Sidebar />
         </div>
@@ -110,11 +107,9 @@ export default function Layout({ title = "Painel", children }) {
                 className="fixed left-0 top-0 z-[60] h-screen w-[290px] max-w-[85vw] overflow-y-auto border-r border-white/10 bg-slate-950 shadow-2xl lg:hidden"
               >
                 <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-xl border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-xs text-sky-300">
-                      Menu CARFEX
-                    </span>
-                  </div>
+                  <span className="rounded-xl border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-xs text-sky-300">
+                    Menu CARFEX
+                  </span>
 
                   <button
                     onClick={() => setMenuOpen(false)}
@@ -130,11 +125,13 @@ export default function Layout({ title = "Painel", children }) {
           )}
         </AnimatePresence>
 
-        <main className="relative flex min-h-screen flex-1 flex-col overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[180px] bg-gradient-to-b from-slate-700/70 via-slate-800/35 to-transparent" />
+        <main className="relative flex min-h-screen flex-1 flex-col overflow-hidden bg-slate-950">
+          <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.10),transparent_32%)]" />
+          <div className="pointer-events-none absolute inset-0 z-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:58px_58px]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[180px] bg-gradient-to-b from-slate-700/55 via-slate-800/25 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[1px] bg-white/10" />
 
-          <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-900/45 backdrop-blur-2xl">
+          <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/70 backdrop-blur-2xl">
             <div className="flex flex-col gap-4 px-4 py-5 lg:px-8 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex items-start gap-3">
                 <button
@@ -169,65 +166,29 @@ export default function Layout({ title = "Painel", children }) {
                 animate={{ opacity: 1, x: 0 }}
                 className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap xl:items-center"
               >
-                <div className="rounded-2xl border border-white/10 bg-slate-800/50 px-4 py-3 shadow-lg shadow-sky-950/20 backdrop-blur">
-                  <div className="flex items-center gap-3">
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_14px_rgba(74,222,128,0.95)]" />
+                <TopCard
+                  dot
+                  label="Sistema"
+                  value="Operando normalmente"
+                />
 
-                    <div className="leading-tight">
-                      <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                        Sistema
-                      </p>
-                      <p className="text-sm font-semibold text-white">
-                        Operando normalmente
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <TopCard
+                  icon={<Clock3 className="h-4 w-4 text-sky-300" />}
+                  label="Data e hora"
+                  value={formatarDataHora(agora)}
+                />
 
-                <div className="rounded-2xl border border-white/10 bg-slate-800/50 px-4 py-3 shadow-lg shadow-slate-950/30 backdrop-blur">
-                  <div className="flex items-center gap-3">
-                    <Clock3 className="h-4 w-4 text-sky-300" />
+                <TopCard
+                  icon={<Building2 className="h-4 w-4 text-cyan-300" />}
+                  label="Unidade"
+                  value="CARFEX"
+                />
 
-                    <div className="leading-tight">
-                      <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                        Data e hora
-                      </p>
-                      <p className="text-sm font-semibold text-white">
-                        {formatarDataHora(agora)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-slate-800/50 px-4 py-3 shadow-lg shadow-slate-950/30 backdrop-blur">
-                  <div className="flex items-center gap-3">
-                    <Building2 className="h-4 w-4 text-cyan-300" />
-
-                    <div className="leading-tight">
-                      <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                        Unidade
-                      </p>
-                      <p className="text-sm font-semibold text-white">
-                        CARFEX
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-slate-800/50 px-4 py-3 shadow-lg shadow-slate-950/30 backdrop-blur">
-                  <div className="flex items-center gap-3">
-                    <ShieldCheck className="h-4 w-4 text-emerald-300" />
-
-                    <div className="leading-tight">
-                      <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                        Sessão
-                      </p>
-                      <p className="text-sm font-semibold text-white">
-                        {nomeExibicao} • {perfilExibicao}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <TopCard
+                  icon={<ShieldCheck className="h-4 w-4 text-emerald-300" />}
+                  label="Sessão"
+                  value={`${nomeExibicao} • ${perfilExibicao}`}
+                />
 
                 <motion.button
                   whileHover={{ y: -2, scale: 1.02 }}
@@ -242,10 +203,31 @@ export default function Layout({ title = "Painel", children }) {
             </div>
           </header>
 
-          <div className="relative z-10 flex-1 px-4 py-4 lg:px-6 lg:py-6">
+          <div className="relative z-10 flex-1 bg-transparent px-4 py-4 lg:px-6 lg:py-6">
             {children}
           </div>
         </main>
+      </div>
+    </div>
+  );
+}
+
+function TopCard({ icon, label, value, dot = false }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-slate-800/50 px-4 py-3 shadow-lg shadow-slate-950/30 backdrop-blur">
+      <div className="flex items-center gap-3">
+        {dot ? (
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_14px_rgba(74,222,128,0.95)]" />
+        ) : (
+          icon
+        )}
+
+        <div className="leading-tight">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+            {label}
+          </p>
+          <p className="text-sm font-semibold text-white">{value}</p>
+        </div>
       </div>
     </div>
   );

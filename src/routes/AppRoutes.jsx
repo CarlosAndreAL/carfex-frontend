@@ -5,6 +5,8 @@ import {
   Route,
 } from "react-router-dom";
 
+import Motoristas from "../pages/Motoristas";
+import PagamentosMotorista from "../pages/PagamentosMotorista";
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import Clientes from "../pages/Clientes";
@@ -13,6 +15,8 @@ import Locacoes from "../pages/Locacoes";
 import Multas from "../pages/Multas";
 import Investidores from "../pages/Investidores";
 import RepassesInvestidores from "../pages/RepassesInvestidores";
+import Relatorios from "../pages/Relatorios";
+import Comprovantes from "../pages/Comprovantes";
 
 import InvestidorLogin from "../pages/InvestidorLogin";
 import InvestidorDashboard from "../pages/InvestidorDashboard";
@@ -27,6 +31,14 @@ export default function AppRoutes() {
   return (
     <RouterComponent>
       <Routes>
+        <Route path="/comprovantes" element={<Comprovantes />} />
+
+<Route path="/motoristas" element={<Motoristas />} />
+        
+        <Route path="/relatorios" element={<Relatorios />} />
+
+<Route path="/pagamentos-motorista" element={<PagamentosMotorista />} />
+
         <Route path="/" element={<Login />} />
 
         <Route
