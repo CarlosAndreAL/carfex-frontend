@@ -10,6 +10,8 @@ import {
   Filter,
   Trash2,
   Siren,
+  Clock3,
+  Eye,
 } from "lucide-react";
 import Layout from "../components/Layout";
 import API_URL from "../config/api";
@@ -25,6 +27,10 @@ function normalizar(texto) {
   return String(texto || "").toLowerCase().trim();
 }
 
+function statusUpper(status) {
+  return String(status || "").toUpperCase();
+}
+
 function diasAtraso(dataVencimento) {
   const hoje = new Date();
   const vencimento = new Date(dataVencimento);
@@ -37,13 +43,31 @@ function diasAtraso(dataVencimento) {
 }
 
 function StatusBadge({ status }) {
-  const s = String(status || "").toUpperCase();
+  const s = statusUpper(status);
 
   if (s === "PAGO") {
     return (
       <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-xs font-black text-emerald-300">
         <CheckCircle2 className="h-3.5 w-3.5" />
         Pago
+      </span>
+    );
+  }
+
+  if (s === "PARCIAL") {
+    return (
+      <span className="inline-flex items-center gap-2 rounded-full border border-blue-400/25 bg-blue-500/10 px-3 py-1 text-xs font-black text-blue-300">
+        <AlertCircle className="h-3.5 w-3.5" />
+        Parcial
+      </span>
+    );
+  }
+
+  if (s === "EM_ANALISE") {
+    return (
+      <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-xs font-black text-cyan-300">
+        <Eye className="h-3.5 w-3.5" />
+        Em análise
       </span>
     );
   }
@@ -69,7 +93,7 @@ export default function PagamentosMotorista() {
   const [pagamentos, setPagamentos] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
-  const [filtroStatus, setFiltroStatus] = useState("PENDENTE");
+  const [filtroStatus, setFiltroStatus] = useState("ABERTOS");
   const [busca, setBusca] = useState("");
 
   async function carregarPagamentos() {
@@ -97,21 +121,25 @@ export default function PagamentosMotorista() {
     carregarPagamentos();
   }, []);
 
-  const totalPendente = pagamentos
-    .filter((p) => String(p.status || "").toUpperCase() === "PENDENTE")
-    .reduce((total, p) => total + Number(p.valor || 0), 0);
+  const resumo = useMemo(() => {
+    const pendentes = pagamentos.filter((p) => statusUpper(p.status) === "PENDENTE");
+    const atrasados = pagamentos.filter((p) => statusUpper(p.status) === "ATRASADO");
+    const pagos = pagamentos.filter((p) => statusUpper(p.status) === "PAGO");
+    const parciais = pagamentos.filter((p) => statusUpper(p.status) === "PARCIAL");
+    const analise = pagamentos.filter((p) => statusUpper(p.status) === "EM_ANALISE");
 
-  const totalAtrasado = pagamentos
-    .filter((p) => String(p.status || "").toUpperCase() === "ATRASADO")
-    .reduce((total, p) => total + Number(p.valor || 0), 0);
-
-  const totalPago = pagamentos
-    .filter((p) => String(p.status || "").toUpperCase() === "PAGO")
-    .reduce((total, p) => total + Number(p.valorPago || p.valor || 0), 0);
+    return {
+      totalPendente: pendentes.reduce((t, p) => t + Number(p.valor || 0), 0),
+      totalAtrasado: atrasados.reduce((t, p) => t + Number(p.valor || 0), 0),
+      totalPago: pagos.reduce((t, p) => t + Number(p.valorPago || p.valor || 0), 0),
+      totalParcial: parciais.reduce((t, p) => t + Number(p.saldoRestante || 0), 0),
+      totalAnalise: analise.reduce((t, p) => t + Number(p.valorPago || 0), 0),
+    };
+  }, [pagamentos]);
 
   const pagamentosFiltrados = useMemo(() => {
     return pagamentos.filter((pagamento) => {
-      const status = String(pagamento.status || "").toUpperCase();
+      const status = statusUpper(pagamento.status);
 
       const passaStatus =
         filtroStatus === "TODOS" ||
@@ -156,7 +184,7 @@ export default function PagamentosMotorista() {
       }
 
       if (!data.links || data.links.length === 0) {
-        alert("Nenhum pagamento atrasado para cobrar.");
+        alert("Nenhum pagamento atrasado ou parcial para cobrar.");
         return;
       }
 
@@ -172,7 +200,7 @@ export default function PagamentosMotorista() {
 
   async function marcarComoPago(pagamento) {
     const confirmar = window.confirm(
-      `Confirmar baixa de ${brl(pagamento.valor)} para ${
+      `Confirmar baixa total de ${brl(pagamento.valor)} para ${
         pagamento.cliente?.nome || "motorista"
       }?`
     );
@@ -245,7 +273,7 @@ export default function PagamentosMotorista() {
               </h1>
 
               <p className="mt-3 max-w-3xl text-slate-400">
-                Controle pendências, atrasos, WhatsApp e baixas dos motoristas.
+                Controle pendências, pagamentos parciais, comprovantes e baixas.
               </p>
             </div>
 
@@ -255,7 +283,7 @@ export default function PagamentosMotorista() {
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-bold text-red-200 transition hover:-translate-y-0.5 hover:bg-red-500/20"
               >
                 <Siren className="h-4 w-4" />
-                Cobrar atrasados
+                Cobrar pendências
               </button>
 
               <button
@@ -269,28 +297,12 @@ export default function PagamentosMotorista() {
           </div>
         </section>
 
-        <section className="mt-6 grid gap-4 md:grid-cols-4">
-          <div className="rounded-[28px] border border-amber-400/20 bg-amber-400/10 p-5">
-            <p className="text-sm text-amber-100/80">Pendente</p>
-            <p className="mt-2 text-3xl font-black">{brl(totalPendente)}</p>
-          </div>
-
-          <div className="rounded-[28px] border border-red-400/25 bg-red-500/10 p-5">
-            <p className="text-sm text-red-100/80">Atrasado</p>
-            <p className="mt-2 text-3xl font-black text-red-200">
-              {brl(totalAtrasado)}
-            </p>
-          </div>
-
-          <div className="rounded-[28px] border border-emerald-400/20 bg-emerald-400/10 p-5">
-            <p className="text-sm text-emerald-100/80">Pago</p>
-            <p className="mt-2 text-3xl font-black">{brl(totalPago)}</p>
-          </div>
-
-          <div className="rounded-[28px] border border-cyan-400/20 bg-cyan-400/10 p-5">
-            <p className="text-sm text-cyan-100/80">Lançamentos filtrados</p>
-            <p className="mt-2 text-3xl font-black">{pagamentosFiltrados.length}</p>
-          </div>
+        <section className="mt-6 grid gap-4 md:grid-cols-5">
+          <ResumoCard titulo="Pendente" valor={brl(resumo.totalPendente)} cor="amber" />
+          <ResumoCard titulo="Atrasado" valor={brl(resumo.totalAtrasado)} cor="red" />
+          <ResumoCard titulo="Parcial restante" valor={brl(resumo.totalParcial)} cor="blue" />
+          <ResumoCard titulo="Em análise" valor={brl(resumo.totalAnalise)} cor="cyan" />
+          <ResumoCard titulo="Pago" valor={brl(resumo.totalPago)} cor="emerald" />
         </section>
 
         <section className="mt-6 rounded-[36px] border border-white/10 bg-white/[0.06] p-6 shadow-[0_25px_90px_rgba(2,8,23,0.45)] backdrop-blur-xl">
@@ -298,7 +310,7 @@ export default function PagamentosMotorista() {
             <div>
               <h2 className="text-2xl font-black">Cobranças lançadas</h2>
               <p className="mt-1 text-sm text-slate-400">
-                Por padrão, aparecem apenas cobranças pendentes.
+                Veja pendentes, parciais, em análise e pagos.
               </p>
             </div>
 
@@ -318,12 +330,14 @@ export default function PagamentosMotorista() {
                 <select
                   value={filtroStatus}
                   onChange={(e) => setFiltroStatus(e.target.value)}
-                  className="w-full appearance-none rounded-2xl border border-white/10 bg-slate-950/60 py-3 pl-11 pr-8 text-sm text-white outline-none focus:border-cyan-400/40 md:w-[220px]"
+                  className="w-full appearance-none rounded-2xl border border-white/10 bg-slate-950/60 py-3 pl-11 pr-8 text-sm text-white outline-none focus:border-cyan-400/40 md:w-[230px]"
                 >
+                  <option value="ABERTOS">Abertos</option>
                   <option value="PENDENTE">Pendentes</option>
                   <option value="ATRASADO">Atrasados</option>
-                  <option value="ABERTOS">Pendentes + atrasados</option>
-                  <option value="PAGO">Com baixa</option>
+                  <option value="PARCIAL">Parciais</option>
+                  <option value="EM_ANALISE">Em análise</option>
+                  <option value="PAGO">Pagos</option>
                   <option value="TODOS">Todos</option>
                 </select>
               </div>
@@ -347,8 +361,10 @@ export default function PagamentosMotorista() {
           ) : (
             <div className="mt-6 space-y-4">
               {pagamentosFiltrados.map((pagamento, index) => {
-                const status = String(pagamento.status || "").toUpperCase();
+                const status = statusUpper(pagamento.status);
                 const atrasado = status === "ATRASADO";
+                const parcial = status === "PARCIAL";
+                const analise = status === "EM_ANALISE";
 
                 return (
                   <motion.div
@@ -360,6 +376,10 @@ export default function PagamentosMotorista() {
                     className={`rounded-[30px] border p-5 ${
                       atrasado
                         ? "border-red-400/25 bg-red-500/10"
+                        : parcial
+                        ? "border-blue-400/25 bg-blue-500/10"
+                        : analise
+                        ? "border-cyan-400/25 bg-cyan-400/10"
                         : "border-white/10 bg-slate-950/40"
                     }`}
                   >
@@ -390,12 +410,34 @@ export default function PagamentosMotorista() {
                             {diasAtraso(pagamento.dataVencimento)} dia(s) de atraso
                           </p>
                         )}
+
+                        {(parcial || analise) && (
+                          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                            <div className="rounded-2xl border border-blue-400/20 bg-blue-500/10 px-4 py-3">
+                              <p className="text-xs uppercase tracking-[0.18em] text-blue-200/70">
+                                Valor pago
+                              </p>
+                              <p className="mt-1 text-lg font-black text-blue-100">
+                                {brl(pagamento.valorPago)}
+                              </p>
+                            </div>
+
+                            <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3">
+                              <p className="text-xs uppercase tracking-[0.18em] text-amber-200/70">
+                                Saldo restante
+                              </p>
+                              <p className="mt-1 text-lg font-black text-amber-100">
+                                {brl(pagamento.saldoRestante)}
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <div className="grid gap-3 sm:grid-cols-4">
                         <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
                           <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
-                            Valor
+                            Valor total
                           </p>
                           <p className="mt-1 text-xl font-black">
                             {brl(pagamento.valor)}
@@ -438,5 +480,22 @@ export default function PagamentosMotorista() {
         <div className="h-40 bg-slate-950" />
       </div>
     </Layout>
+  );
+}
+
+function ResumoCard({ titulo, valor, cor }) {
+  const cores = {
+    amber: "border-amber-400/20 bg-amber-400/10 text-amber-100",
+    red: "border-red-400/25 bg-red-500/10 text-red-100",
+    blue: "border-blue-400/25 bg-blue-500/10 text-blue-100",
+    cyan: "border-cyan-400/20 bg-cyan-400/10 text-cyan-100",
+    emerald: "border-emerald-400/20 bg-emerald-400/10 text-emerald-100",
+  };
+
+  return (
+    <div className={`rounded-[28px] border p-5 ${cores[cor]}`}>
+      <p className="text-sm opacity-80">{titulo}</p>
+      <p className="mt-2 text-2xl font-black">{valor}</p>
+    </div>
   );
 }

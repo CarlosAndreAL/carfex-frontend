@@ -78,7 +78,7 @@ export default function Sidebar({ mobile = false, onNavigate = null }) {
 
     { to: "/repasses-investidores", label: "Repasses", icon: Wallet },
 
-    { to: "/relatorios", label: "Relatórios", icon: BarChart3, adminOnly: true },
+    { to: "/relatorios", label: "Financeiro", icon: BarChart3, adminOnly: true },
   ];
 
   return (

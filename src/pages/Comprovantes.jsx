@@ -87,39 +87,52 @@ export default function Comprovantes() {
   }, [dados]);
 
   async function aprovar(id) {
-    const confirmar = window.confirm(
-      "Deseja aprovar esse comprovante e dar baixa no pagamento?"
-    );
-    if (!confirmar) return;
+  const valorDigitado = window.prompt(
+    "Digite o valor pago que aparece no comprovante. Ex: 34,20"
+  );
 
-    try {
-      setProcessandoId(id);
+  if (!valorDigitado) return;
 
-      const res = await fetch(
-        `${API_URL}/pagamentos-motorista/${id}/aprovar-comprovante`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  const confirmar = window.confirm(
+    `Confirmar aprovação com valor pago de R$ ${valorDigitado}?`
+  );
 
-      const data = await res.json().catch(() => ({}));
+  if (!confirmar) return;
 
-      if (!res.ok) {
-        throw new Error(data.erro || "Erro ao aprovar comprovante");
-      }
+  try {
+    setProcessandoId(id);
 
-      await carregar();
-      alert("Comprovante aprovado. Pagamento baixado como PAGO.");
-    } catch (error) {
-      alert(error.message || "Erro ao aprovar comprovante");
-    } finally {
-      setProcessandoId(null);
+    const res = await fetch(`${API_URL}/pagamentos-motorista/${id}/aprovar-comprovante`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        valorPagoAprovado: valorDigitado,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(data.erro || "Erro ao aprovar comprovante");
     }
-  }
 
+    await carregar();
+
+    if (data.status === "PARCIAL") {
+      alert(
+        `Comprovante aprovado parcialmente.\nValor pago: ${brl(data.valorPago)}\nSaldo restante: ${brl(data.saldoRestante)}`
+      );
+    } else {
+      alert("Comprovante aprovado. Pagamento baixado como PAGO.");
+    }
+  } catch (error) {
+    alert(error.message || "Erro ao aprovar comprovante");
+  } finally {
+    setProcessandoId(null);
+  }
+}
   async function rejeitar() {
     if (!modalRejeitar) return;
 
