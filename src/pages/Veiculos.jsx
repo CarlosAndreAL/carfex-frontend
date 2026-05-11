@@ -16,6 +16,9 @@ import {
   BadgeDollarSign,
   CheckCircle2,
   AlertTriangle,
+  PhoneCall,
+  Headphones,
+  Building2,
 } from "lucide-react";
 import Layout from "../components/Layout";
 import PageWrapper from "../components/PageWrapper";
@@ -165,6 +168,8 @@ export default function Veiculos() {
     franquia: "",
     valorSemanalPadrao: "",
     caucaoPadrao: "",
+    seguradora: "",
+    telefoneAssistencia: "",
     status: "DISPONIVEL",
   });
 
@@ -226,7 +231,12 @@ export default function Veiculos() {
             ? Number(form.valorSemanalPadrao)
             : null,
           caucaoPadrao: form.caucaoPadrao ? Number(form.caucaoPadrao) : null,
+          
+          seguradora: form.seguradora || null,
+          telefoneAssistencia: form.telefoneAssistencia || null,
+
           status: form.status,
+
         }),
       });
 
@@ -246,6 +256,8 @@ export default function Veiculos() {
         franquia: "",
         valorSemanalPadrao: "",
         caucaoPadrao: "",
+        seguradora: "",
+        telefoneAssistencia: "",
         status: "DISPONIVEL",
       });
 
@@ -536,6 +548,36 @@ export default function Veiculos() {
                 </Field>
               </div>
 
+              <div className="grid gap-4 md:grid-cols-2">
+  <Field
+    label="Seguradora / Assistência"
+    icon={<Building2 className="h-4 w-4" />}
+  >
+    <input
+      type="text"
+      name="seguradora"
+      value={form.seguradora}
+      onChange={handleChange}
+      className={inputClass}
+      placeholder="Ex: Alan, Unir, 21GO"
+    />
+  </Field>
+
+  <Field
+    label="Telefone assistência 24h"
+    icon={<Headphones className="h-4 w-4" />}
+  >
+    <input
+      type="text"
+      name="telefoneAssistencia"
+      value={form.telefoneAssistencia}
+      onChange={handleChange}
+      className={inputClass}
+      placeholder="5521988887777"
+    />
+  </Field>
+</div>
+
               <Field label="Status" icon={<Wrench className="h-4 w-4" />}>
                 <select name="status" value={form.status} onChange={handleChange} className={inputClass}>
                   <option value="DISPONIVEL">DISPONÍVEL</option>
@@ -681,6 +723,23 @@ export default function Veiculos() {
                         <p className="text-xs text-slate-500">Caução</p>
                         <p className="text-sm text-slate-200">{brl(veiculo.caucaoPadrao)}</p>
                       </div>
+
+<div>
+  <p className="text-xs text-slate-500">Seguradora</p>
+  <p className="text-sm text-slate-200">
+    {veiculo.seguradora || "-"}
+  </p>
+</div>
+
+<div>
+  <p className="text-xs text-slate-500">
+    Assistência 24h
+  </p>
+  <p className="text-sm text-slate-200">
+    {veiculo.telefoneAssistencia || "-"}
+  </p>
+</div>
+
                     </div>
                   </motion.div>
                 ))
