@@ -193,16 +193,14 @@ function handleChange(e) {
   if (name === "cpf") {
     setForm((prev) => ({
       ...prev,
-      cpf: formatarCpf(value),
-    }));
+cpf: aplicarMascaraCPF(value),    }));
     return;
   }
 
   if (name === "telefone") {
     setForm((prev) => ({
       ...prev,
-      telefone: formatarTelefone(value),
-    }));
+telefone: aplicarMascaraTelefone(value),    }));
     return;
   }
 
