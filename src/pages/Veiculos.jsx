@@ -9,6 +9,7 @@ import {
   Search,
   Plus,
   Trash2,
+  Pencil,
   Sparkles,
   TrendingUp,
   Activity,
@@ -158,6 +159,23 @@ export default function Veiculos() {
   const [tipoMensagem, setTipoMensagem] = useState("erro");
   const [salvando, setSalvando] = useState(false);
 
+  const [editandoVeiculo, setEditandoVeiculo] = useState(null);
+
+const [formEditar, setFormEditar] = useState({
+  marca: "",
+  modelo: "",
+  anoModelo: "",
+  placa: "",
+  renavam: "",
+  chassi: "",
+  franquia: "",
+  valorSemanalPadrao: "",
+  caucaoPadrao: "",
+  seguradora: "",
+  telefoneAssistencia: "",
+  status: "DISPONIVEL",
+});
+
   const [form, setForm] = useState({
     marca: "",
     modelo: "",
@@ -195,6 +213,25 @@ export default function Veiculos() {
     carregarVeiculos();
   }, []);
 
+function abrirEdicao(veiculo) {
+  setEditandoVeiculo(veiculo);
+
+  setFormEditar({
+    marca: veiculo.marca || "",
+    modelo: veiculo.modelo || "",
+    anoModelo: veiculo.anoModelo || "",
+    placa: veiculo.placa || "",
+    renavam: veiculo.renavam || "",
+    chassi: veiculo.chassi || "",
+    franquia: veiculo.franquia || "",
+    valorSemanalPadrao: veiculo.valorSemanalPadrao || "",
+    caucaoPadrao: veiculo.caucaoPadrao || "",
+    seguradora: veiculo.seguradora || "",
+    telefoneAssistencia: veiculo.telefoneAssistencia || "",
+    status: veiculo.status || "DISPONIVEL",
+  });
+}
+
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({
@@ -202,6 +239,17 @@ export default function Veiculos() {
       [name]: name === "placa" ? value.toUpperCase() : value,
     }));
   }
+
+  function handleEditarChange(e) {
+  const { name, value } = e.target;
+
+  setFormEditar((prev) => ({
+    ...prev,
+    [name]: name === "placa"
+      ? value.toUpperCase()
+      : value,
+  }));
+}
 
   async function salvarVeiculo(e) {
     e.preventDefault();
@@ -294,6 +342,59 @@ export default function Veiculos() {
     }
   }
 
+ async function salvarEdicaoVeiculo(e) {
+  e.preventDefault();
+
+  try {
+    const response = await fetch(
+      `https://carfex-backend.onrender.com/veiculos/${editandoVeiculo.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formEditar,
+          franquia: formEditar.franquia
+            ? Number(formEditar.franquia)
+            : null,
+
+          valorSemanalPadrao:
+            formEditar.valorSemanalPadrao
+              ? Number(formEditar.valorSemanalPadrao)
+              : null,
+
+          caucaoPadrao:
+            formEditar.caucaoPadrao
+              ? Number(formEditar.caucaoPadrao)
+              : null,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.erro || "Erro ao editar veículo");
+    }
+
+    await carregarVeiculos();
+
+    setEditandoVeiculo(null);
+
+    mostrarMensagem(
+      "Veículo atualizado com sucesso.",
+      "sucesso"
+    );
+  } catch (error) {
+    console.error(error);
+
+    mostrarMensagem(
+      error.message || "Erro ao editar veículo"
+    );
+  }
+}
+ 
   const veiculosFiltrados = useMemo(() => {
     let lista = Array.isArray(veiculos) ? veiculos : [];
 
@@ -684,6 +785,14 @@ export default function Veiculos() {
                         </span>
 
                         <button
+                          onClick={() => abrirEdicao(veiculo)}
+                          className="rounded-full p-2 text-slate-500 transition hover:bg-sky-500/10 hover:text-sky-400"
+                          title="Editar veículo"
+                          >
+                          <Pencil className="h-4 w-4" />
+                          </button>
+
+                        <button
                           onClick={() => excluirVeiculo(veiculo.id)}
                           className="rounded-full p-2 text-slate-500 transition hover:bg-red-500/10 hover:text-red-400"
                           title="Excluir veículo"
@@ -864,6 +973,149 @@ export default function Veiculos() {
           </motion.section>
         </div>
       </PageWrapper>
+
+{editandoVeiculo && (
+  <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      className="w-full max-w-3xl rounded-3xl border border-white/10 bg-slate-950 p-6 shadow-2xl"
+    >
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-white">
+            Editar veículo
+          </h2>
+
+          <p className="text-sm text-slate-400">
+            Altere os dados padrão dos próximos contratos.
+          </p>
+        </div>
+
+        <button
+          onClick={() => setEditandoVeiculo(null)}
+          className="rounded-full bg-white/5 p-2 text-slate-400 hover:bg-red-500/10 hover:text-red-400"
+        >
+          ✕
+        </button>
+      </div>
+
+      <form
+        onSubmit={salvarEdicaoVeiculo}
+        className="space-y-4"
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <input
+            type="text"
+            name="marca"
+            value={formEditar.marca}
+            onChange={handleEditarChange}
+            placeholder="Marca"
+            className={inputClass}
+          />
+
+          <input
+            type="text"
+            name="modelo"
+            value={formEditar.modelo}
+            onChange={handleEditarChange}
+            placeholder="Modelo"
+            className={inputClass}
+          />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <input
+            type="number"
+            step="0.01"
+            name="franquia"
+            value={formEditar.franquia}
+            onChange={handleEditarChange}
+            placeholder="Franquia"
+            className={inputClass}
+          />
+
+          <input
+            type="number"
+            step="0.01"
+            name="valorSemanalPadrao"
+            value={formEditar.valorSemanalPadrao}
+            onChange={handleEditarChange}
+            placeholder="Valor semanal"
+            className={inputClass}
+          />
+
+          <input
+            type="number"
+            step="0.01"
+            name="caucaoPadrao"
+            value={formEditar.caucaoPadrao}
+            onChange={handleEditarChange}
+            placeholder="Caução"
+            className={inputClass}
+          />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <input
+            type="text"
+            name="seguradora"
+            value={formEditar.seguradora}
+            onChange={handleEditarChange}
+            placeholder="Seguradora"
+            className={inputClass}
+          />
+
+          <input
+            type="text"
+            name="telefoneAssistencia"
+            value={formEditar.telefoneAssistencia}
+            onChange={handleEditarChange}
+            placeholder="Assistência 24h"
+            className={inputClass}
+          />
+        </div>
+
+        <select
+          name="status"
+          value={formEditar.status}
+          onChange={handleEditarChange}
+          className={inputClass}
+        >
+          <option value="DISPONIVEL">
+            DISPONÍVEL
+          </option>
+
+          <option value="ALUGADO">
+            ALUGADO
+          </option>
+
+          <option value="MANUTENCAO">
+            MANUTENÇÃO
+          </option>
+        </select>
+
+        <div className="flex justify-end gap-3 pt-4">
+          <button
+            type="button"
+            onClick={() => setEditandoVeiculo(null)}
+            className="rounded-2xl border border-white/10 px-5 py-3 text-sm text-slate-300 transition hover:bg-white/5"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-400"
+          >
+            Salvar alterações
+          </button>
+        </div>
+      </form>
+    </motion.div>
+  </div>
+)}
+
     </Layout>
   );
 }
