@@ -190,6 +190,22 @@ async function buscarEnderecoPorCep(cepDigitado) {
 function handleChange(e) {
   const { name, value } = e.target;
 
+  if (name === "cpf") {
+    setForm((prev) => ({
+      ...prev,
+      cpf: formatarCpf(value),
+    }));
+    return;
+  }
+
+  if (name === "telefone") {
+    setForm((prev) => ({
+      ...prev,
+      telefone: formatarTelefone(value),
+    }));
+    return;
+  }
+
   if (name === "cep") {
     const cepFormatado = formatarCep(value);
 
