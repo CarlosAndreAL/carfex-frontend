@@ -151,20 +151,62 @@ export default function Clientes() {
     carregarClientes();
   }, []);
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    let novoValor = value;
+  
+  function formatarCep(valor) {
+  return valor
+    .replace(/\D/g, "")
+    .replace(/^(\d{5})(\d)/, "$1-$2")
+    .slice(0, 9);
+}
 
-    if (name === "cpf") novoValor = aplicarMascaraCPF(value);
-    if (name === "telefone") novoValor = aplicarMascaraTelefone(value);
-    if (name === "cep") novoValor = aplicarMascaraCEP(value);
-    if (name === "estado") novoValor = value.toUpperCase().slice(0, 2);
+async function buscarEnderecoPorCep(cepDigitado) {
+  const cepLimpo = cepDigitado.replace(/\D/g, "");
+
+  if (cepLimpo.length !== 8) return;
+
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+    const data = await response.json();
+
+    if (data.erro) {
+      mostrarMensagem("CEP não encontrado.");
+      return;
+    }
 
     setForm((prev) => ({
       ...prev,
-      [name]: novoValor,
+      cep: formatarCep(cepLimpo),
+      endereco: data.logradouro || "",
+      bairro: data.bairro || "",
+      cidade: data.localidade || "",
+      estado: data.uf || "",
     }));
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao buscar CEP.");
   }
+}
+
+function handleChange(e) {
+  const { name, value } = e.target;
+
+  if (name === "cep") {
+    const cepFormatado = formatarCep(value);
+
+    setForm((prev) => ({
+      ...prev,
+      cep: cepFormatado,
+    }));
+
+    buscarEnderecoPorCep(cepFormatado);
+    return;
+  }
+
+  setForm((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+}
 
   async function salvarCliente(e) {
     e.preventDefault();
