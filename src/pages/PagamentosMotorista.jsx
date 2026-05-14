@@ -278,14 +278,13 @@ export default function PagamentosMotorista() {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
-              <button
-                onClick={cobrarTodosAtrasados}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-bold text-red-200 transition hover:-translate-y-0.5 hover:bg-red-500/20"
-              >
-                <Siren className="h-4 w-4" />
-                Cobrar pendências
-              </button>
-
+              
+                <button
+  onClick={cobrarPendenciasHoje}
+  className="rounded-2xl border border-rose-400/30 bg-rose-500/15 px-5 py-3 font-bold text-rose-100"
+>
+  Cobrar pendências
+</button>
               <button
                 onClick={carregarPagamentos}
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-3 text-sm font-bold text-cyan-200 transition hover:-translate-y-0.5 hover:bg-cyan-400/20"
@@ -491,6 +490,101 @@ function ResumoCard({ titulo, valor, cor }) {
     cyan: "border-cyan-400/20 bg-cyan-400/10 text-cyan-100",
     emerald: "border-emerald-400/20 bg-emerald-400/10 text-emerald-100",
   };
+
+function limparTelefone(telefone = "") {
+  return String(telefone).replace(/\D/g, "");
+}
+
+function mesmaDataHoje(data) {
+  if (!data) return false;
+
+  const hoje = new Date();
+  const vencimento = new Date(data);
+
+  return (
+    hoje.getDate() === vencimento.getDate() &&
+    hoje.getMonth() === vencimento.getMonth() &&
+    hoje.getFullYear() === vencimento.getFullYear()
+  );
+}
+
+function gerarMensagemCobranca(pagamento) {
+  const nome =
+    pagamento?.cliente?.nome ||
+    pagamento?.motorista ||
+    "motorista";
+
+  const valor = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(
+    Number(
+      pagamento?.saldoRestante ||
+      pagamento?.valor ||
+      0
+    )
+  );
+
+  const vencimento = new Date(
+    pagamento.dataVencimento
+  ).toLocaleDateString("pt-BR");
+
+  return `Olá, ${nome}. Tudo bem?
+
+Identificamos uma pendência referente à sua locação CARFEX.
+
+📅 Vencimento: ${vencimento}
+💰 Valor pendente: ${valor}
+
+Pedimos a gentileza de realizar o pagamento ainda hoje.
+
+Caso já tenha efetuado o pagamento, envie o comprovante.
+
+Equipe CARFEX`;
+}
+
+function cobrarPendenciasHoje() {
+  const pendenciasHoje = pagamentos.filter((p) => {
+    const status = String(p.status || "").toUpperCase();
+
+    return (
+      mesmaDataHoje(p.dataVencimento) &&
+      status !== "PAGO" &&
+      status !== "EM_ANALISE"
+    );
+  });
+
+  if (pendenciasHoje.length === 0) {
+    alert("Nenhuma pendência encontrada para hoje.");
+    return;
+  }
+
+  const confirmar = window.confirm(
+    `Encontramos ${pendenciasHoje.length} cobrança(s) para hoje. Deseja abrir todas no WhatsApp?`
+  );
+
+  if (!confirmar) return;
+
+  pendenciasHoje.forEach((pagamento, index) => {
+    const telefone = limparTelefone(
+      pagamento?.cliente?.telefone ||
+      pagamento?.telefone ||
+      ""
+    );
+
+    if (!telefone) return;
+
+    const mensagem = gerarMensagemCobranca(pagamento);
+
+    const link = `https://wa.me/55${telefone}?text=${encodeURIComponent(
+      mensagem
+    )}`;
+
+    setTimeout(() => {
+      window.open(link, "_blank");
+    }, index * 900);
+  });
+}
 
   return (
     <div className={`rounded-[28px] border p-5 ${cores[cor]}`}>
