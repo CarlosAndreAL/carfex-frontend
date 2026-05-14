@@ -531,6 +531,39 @@ export default function Investidores() {
   const totalRecebido = Number(investidor.totalRecebido || 0);
   const percentual = Number(investidor.percentual || 0);
 
+async function atualizarPercentualEmpresa(id, percentualEmpresa) {
+  try {
+    setMensagem("");
+    setTipoMensagem("info");
+
+    const response = await fetch(
+      `${API_URL}/investidores/${id}/percentual-empresa`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ percentualEmpresa }),
+      }
+    );
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.erro || "Erro ao atualizar percentual");
+    }
+
+    setTipoMensagem("sucesso");
+    setMensagem("Percentual da empresa atualizado com sucesso.");
+
+    await carregarDados();
+  } catch (error) {
+    console.error(error);
+    setTipoMensagem("erro");
+    setMensagem(error.message || "Erro ao atualizar percentual");
+  }
+}
+
   return (
     <motion.div
       key={investidor.id}
@@ -614,6 +647,49 @@ export default function Investidores() {
             Nenhum veículo vinculado.
           </div>
         )}
+
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+  <p className="mb-3 text-sm font-semibold text-slate-300">
+    Percentual da empresa
+  </p>
+
+  <div className="flex flex-wrap gap-2">
+    {[
+      { label: "10%", value: 10 },
+      { label: "15%", value: 15 },
+      { label: "20%", value: 20 },
+      { label: "NULO", value: 100 },
+    ].map((opcao) => {
+      const ativo =
+        Number(investidor.percentualEmpresa || 15) === opcao.value;
+
+      return (
+        <button
+          key={opcao.value}
+          type="button"
+          onClick={() =>
+            atualizarPercentualEmpresa(investidor.id, opcao.value)
+          }
+          className={`rounded-xl border px-4 py-2 text-xs font-black transition ${
+            ativo
+              ? "border-cyan-300/40 bg-cyan-400/20 text-cyan-100 shadow-[0_0_25px_rgba(34,211,238,0.18)]"
+              : "border-white/10 bg-white/5 text-slate-400 hover:border-cyan-400/30 hover:text-white"
+          }`}
+        >
+          {opcao.label}
+        </button>
+      );
+    })}
+  </div>
+
+  <p className="mt-3 text-xs text-slate-500">
+    {Number(investidor.percentualEmpresa || 15) === 100
+      ? "NULO = carro próprio da empresa. A CARFEX fica com 100% do bruto."
+      : `A CARFEX fica com ${Number(
+          investidor.percentualEmpresa || 15
+        )}% do faturamento bruto dos veículos vinculados.`}
+  </p>
+</div>
 
         <div className="pt-1">
           <button
