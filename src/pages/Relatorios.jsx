@@ -124,6 +124,16 @@ export default function Relatorios() {
     const pagamentosMes = pagamentos.filter((p) => mesmoMes(p.dataVencimento, hoje));
     const pagamentosAno = pagamentos.filter((p) => mesmoAno(p.dataVencimento, hoje));
 
+const faturamentoMes = pagosMes.reduce(
+  (t, p) => t + Number(p.valorPago || p.valor || 0),
+  0
+);
+
+const faturamentoAno = pagosAno.reduce(
+  (t, p) => t + Number(p.valorPago || p.valor || 0),
+  0
+);
+
 function percentualEmpresaDoPagamento(pagamento) {
   const percentual = Number(
     pagamento?.veiculo?.investidor?.percentualEmpresa ?? 100
@@ -149,16 +159,6 @@ const lucroEmpresaAno = pagosAno.reduce((total, p) => {
 
 const repasseInvestidoresMes = faturamentoMes - lucroEmpresaMes;
 const repasseInvestidoresAno = faturamentoAno - lucroEmpresaAno;
-
-    const faturamentoMes = pagosMes.reduce(
-      (t, p) => t + Number(p.valorPago || p.valor || 0),
-      0
-    );
-
-    const faturamentoAno = pagosAno.reduce(
-      (t, p) => t + Number(p.valorPago || p.valor || 0),
-      0
-    );
 
     const projecaoMes = pagamentosMes.reduce((t, p) => {
       const status = statusUpper(p.status);
