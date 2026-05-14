@@ -124,6 +124,32 @@ export default function Relatorios() {
     const pagamentosMes = pagamentos.filter((p) => mesmoMes(p.dataVencimento, hoje));
     const pagamentosAno = pagamentos.filter((p) => mesmoAno(p.dataVencimento, hoje));
 
+function percentualEmpresaDoPagamento(pagamento) {
+  const percentual = Number(
+    pagamento?.veiculo?.investidor?.percentualEmpresa ?? 100
+  );
+
+  return percentual > 0 ? percentual : 100;
+}
+
+function lucroEmpresa(valor, pagamento) {
+  const percentual = percentualEmpresaDoPagamento(pagamento);
+  return Number(valor || 0) * (percentual / 100);
+}
+
+const lucroEmpresaMes = pagosMes.reduce((total, p) => {
+  const valorRecebido = Number(p.valorPago || p.valor || 0);
+  return total + lucroEmpresa(valorRecebido, p);
+}, 0);
+
+const lucroEmpresaAno = pagosAno.reduce((total, p) => {
+  const valorRecebido = Number(p.valorPago || p.valor || 0);
+  return total + lucroEmpresa(valorRecebido, p);
+}, 0);
+
+const repasseInvestidoresMes = faturamentoMes - lucroEmpresaMes;
+const repasseInvestidoresAno = faturamentoAno - lucroEmpresaAno;
+
     const faturamentoMes = pagosMes.reduce(
       (t, p) => t + Number(p.valorPago || p.valor || 0),
       0
@@ -198,6 +224,10 @@ export default function Relatorios() {
     return {
       faturamentoMes,
       faturamentoAno,
+      lucroEmpresaMes,
+      lucroEmpresaAno,
+      repasseInvestidoresMes,
+      repasseInvestidoresAno,
       projecaoMes,
       projecaoAno,
       emAberto,
@@ -299,37 +329,37 @@ export default function Relatorios() {
         )}
 
         <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <CardResumo
-            icon={Wallet}
-            titulo="Faturamento do mês"
-            valor={brl(financeiro.faturamentoMes)}
-            subtitulo="Baixas pagas no mês atual"
-            color="emerald"
-          />
+         <CardResumo
+  icon={Wallet}
+  titulo="Faturamento bruto mês"
+  valor={brl(financeiro.faturamentoMes)}
+  subtitulo="Total recebido dos motoristas"
+  color="emerald"
+/>
 
-          <CardResumo
-            icon={TrendingUp}
-            titulo="Faturamento anual"
-            valor={brl(financeiro.faturamentoAno)}
-            subtitulo="Total recebido no ano"
-            color="cyan"
-          />
+<CardResumo
+  icon={TrendingUp}
+  titulo="Lucro empresa mês"
+  valor={brl(financeiro.lucroEmpresaMes)}
+  subtitulo="Já considerando 10%, 15%, 20% ou NULO"
+  color="cyan"
+/>
 
-          <CardResumo
-            icon={CalendarDays}
-            titulo="Projeção do mês"
-            valor={brl(financeiro.projecaoMes)}
-            subtitulo="Previsto por vencimentos do mês"
-            color="blue"
-          />
+<CardResumo
+  icon={CalendarDays}
+  titulo="Repasse investidores mês"
+  valor={brl(financeiro.repasseInvestidoresMes)}
+  subtitulo="Parte que não fica para a CARFEX"
+  color="blue"
+/>
 
-          <CardResumo
-            icon={BarChart3}
-            titulo="Projeção anual"
-            valor={brl(financeiro.projecaoAno)}
-            subtitulo="Previsto por vencimentos do ano"
-            color="blue"
-          />
+<CardResumo
+  icon={BarChart3}
+  titulo="Lucro empresa ano"
+  valor={brl(financeiro.lucroEmpresaAno)}
+  subtitulo="Lucro real anual da operação"
+  color="blue"
+/>
         </section>
 
         <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
