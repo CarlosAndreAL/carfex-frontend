@@ -660,7 +660,7 @@ function abrirEdicao(veiculo) {
       value={form.seguradora}
       onChange={handleChange}
       className={inputClass}
-      placeholder="Ex: Alan, Unir, 21GO"
+      placeholder="Ex: Alamo, Unir, 21GO, Planet"
     />
   </Field>
 
