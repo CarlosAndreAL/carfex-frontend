@@ -137,6 +137,7 @@ export default function Locacoes() {
     tipoContrato: "PROFISSIONAL",
     tempoContrato: "6_MESES",
     dataInicio: "",
+    dataInicioCobranca: "",
     dataFim: "",
     dataAssinatura: "",
     cidadeAssinatura: "Rio de Janeiro",
@@ -590,18 +591,63 @@ function baixarContratoPdf(id) {
             </div>
 
             <div className="mt-5 grid gap-4 md:grid-cols-3">
-              <Field icon={<CalendarDays className="h-4 w-4" />} label="Data de início">
-                <input type="date" name="dataInicio" value={form.dataInicio} onChange={handleChange} className={inputClass} />
-              </Field>
+  <Field
+    icon={<CalendarDays className="h-4 w-4" />}
+    label="Data de início"
+  >
+    <input
+      type="date"
+      name="dataInicio"
+      value={form.dataInicio}
+      onChange={handleChange}
+      className={inputClass}
+    />
+  </Field>
 
-              <Field icon={<CalendarDays className="h-4 w-4" />} label="Data de fim">
-                <input type="date" name="dataFim" value={form.dataFim} onChange={handleChange} className={inputClass} readOnly />
-              </Field>
+  <Field
+    icon={<CalendarDays className="h-4 w-4" />}
+    label="Início da cobrança"
+  >
+    <input
+      type="date"
+      name="dataInicioCobranca"
+      value={form.dataInicioCobranca}
+      onChange={handleChange}
+      className={inputClass}
+    />
 
-              <Field icon={<CalendarDays className="h-4 w-4" />} label="Data da assinatura">
-                <input type="date" name="dataAssinatura" value={form.dataAssinatura} onChange={handleChange} className={inputClass} />
-              </Field>
-            </div>
+    <p className="mt-2 text-xs text-slate-500">
+      Use essa data para clientes antigos já ativos.
+    </p>
+  </Field>
+
+  <Field
+    icon={<CalendarDays className="h-4 w-4" />}
+    label="Data de fim"
+  >
+    <input
+      type="date"
+      name="dataFim"
+      value={form.dataFim}
+      onChange={handleChange}
+      className={inputClass}
+      readOnly
+    />
+  </Field>
+
+  <Field
+    icon={<CalendarDays className="h-4 w-4" />}
+    label="Data da assinatura"
+  >
+    <input
+      type="date"
+      name="dataAssinatura"
+      value={form.dataAssinatura}
+      onChange={handleChange}
+      className={inputClass}
+    />
+  </Field>
+</div>
 
             <AnimatePresence mode="wait">
               <motion.div
