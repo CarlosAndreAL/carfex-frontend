@@ -1,3 +1,4 @@
-const API_URL = "http://2.24.117.116:3001";
+const API_URL = "/api";
 
 export default API_URL;
+

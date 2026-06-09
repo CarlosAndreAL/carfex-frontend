@@ -578,3 +578,5 @@ function ResumoCard({ titulo, valor, cor }) {
     emerald: "border-emerald-400/20 bg-emerald-400/10 text-emerald-100",
   };
 }
+
+

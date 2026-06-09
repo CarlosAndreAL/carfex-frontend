@@ -457,3 +457,4 @@ function Info({ icon, label, value }) {
     </div>
   );
 }
+

@@ -712,3 +712,4 @@ async function atualizarPercentualEmpresa(id, percentualEmpresa) {
     </Layout>
   );
 }
+

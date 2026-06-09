@@ -10,3 +10,4 @@ export default function ProtectedInvestidor({ children }) {
 
   return children;
 }
+

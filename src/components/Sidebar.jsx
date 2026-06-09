@@ -165,3 +165,4 @@ export default function Sidebar({ mobile = false, onNavigate = null }) {
     </aside>
   );
 }
+

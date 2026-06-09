@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Layout from "../components/Layout";
 import PageWrapper from "../components/PageWrapper";
+import API_URL from "../config/api";
 
 const inputClass =
   "w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400/50 focus:ring-2 focus:ring-sky-400/20";
@@ -151,6 +152,54 @@ function MiniBarChart({ data = [], formatValue }) {
   );
 }
 
+function somenteNumeros(valor) {
+  return String(valor || "").replace(/\D/g, "");
+}
+
+function limitarNumeros(valor, limite) {
+  return somenteNumeros(valor).slice(0, limite);
+}
+
+function maskChassi(valor) {
+  return String(valor || "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 17);
+}
+
+function maskMoeda(valor) {
+  const numeros = somenteNumeros(valor);
+
+  if (!numeros) return "";
+
+  const numero = Number(numeros) / 100;
+
+  return numero.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function moedaParaNumero(valor) {
+  if (!valor) return 0;
+
+  return Number(
+    String(valor)
+      .replace(/\./g, "")
+      .replace(",", ".")
+      .replace(/[^\d.]/g, "")
+  );
+}
+
+function maskTelefone(valor) {
+  const n = somenteNumeros(valor).slice(0, 11);
+
+  if (n.length <= 2) return n;
+  if (n.length <= 7) return `(${n.slice(0, 2)}) ${n.slice(2)}`;
+
+  return `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`;
+}
+
 export default function Veiculos() {
   const [veiculos, setVeiculos] = useState([]);
   const [busca, setBusca] = useState("");
@@ -199,7 +248,7 @@ const [formEditar, setFormEditar] = useState({
 
   async function carregarVeiculos() {
     try {
-      const response = await fetch("https://carfex-backend.onrender.com/veiculos");
+      const response = await fetch(`${API_URL}/veiculos`);
       const data = await response.json();
       setVeiculos(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -262,7 +311,7 @@ function abrirEdicao(veiculo) {
     try {
       setSalvando(true);
 
-      const response = await fetch("https://carfex-backend.onrender.com/veiculos", {
+      const response = await fetch(`${API_URL}/veiculos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -274,11 +323,13 @@ function abrirEdicao(veiculo) {
           placa: form.placa,
           renavam: form.renavam || null,
           chassi: form.chassi || null,
-          franquia: form.franquia ? Number(form.franquia) : null,
+          franquia: form.franquia ? moedaParaNumero(form.franquia)
+ : null,
           valorSemanalPadrao: form.valorSemanalPadrao
-            ? Number(form.valorSemanalPadrao)
+            ? moedaParaNumero(form.valorSemanalPadrao)
+
             : null,
-          caucaoPadrao: form.caucaoPadrao ? Number(form.caucaoPadrao) : null,
+          caucaoPadrao: form.caucaoPadrao ? moedaParaNumero(form.caucaoPadrao) : null,
           
           seguradora: form.seguradora || null,
           telefoneAssistencia: form.telefoneAssistencia || null,
@@ -324,7 +375,7 @@ function abrirEdicao(veiculo) {
     if (!confirmar) return;
 
     try {
-      const response = await fetch(`https://carfex-backend.onrender.com/veiculos/${id}`, {
+      const response = await fetch(`${API_URL}/veiculos/${id}`, {
         method: "DELETE",
       });
 
@@ -347,7 +398,7 @@ function abrirEdicao(veiculo) {
 
   try {
     const response = await fetch(
-      `https://carfex-backend.onrender.com/veiculos/${editandoVeiculo.id}`,
+      `${API_URL}/veiculos/${editandoVeiculo.id}`,
       {
         method: "PUT",
         headers: {
@@ -626,30 +677,91 @@ function abrirEdicao(veiculo) {
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <Field label="RENAVAM" icon={<Hash className="h-4 w-4" />}>
-                  <input type="text" name="renavam" value={form.renavam} onChange={handleChange} className={inputClass} placeholder="RENAVAM" />
-                </Field>
+  <Field label="RENAVAM" icon={<Hash className="h-4 w-4" />}>
+    <input
+      type="text"
+      name="renavam"
+      value={form.renavam}
+      onChange={(e) =>
+        setForm({
+          ...form,
+          renavam: limitarNumeros(e.target.value, 11),
+        })
+      }
+      className={inputClass}
+      placeholder="RENAVAM"
+    />
+  </Field>
 
-                <Field label="Chassi" icon={<Hash className="h-4 w-4" />}>
-                  <input type="text" name="chassi" value={form.chassi} onChange={handleChange} className={inputClass} placeholder="Chassi" />
-                </Field>
-              </div>
+  <Field label="Chassi" icon={<Hash className="h-4 w-4" />}>
+    <input
+      type="text"
+      name="chassi"
+      value={form.chassi}
+      onChange={(e) =>
+        setForm({
+          ...form,
+          chassi: maskChassi(e.target.value),
+        })
+      }
+      className={inputClass}
+      placeholder="Chassi"
+      maxLength={17}
+    />
+  </Field>
+</div>
 
-              <div className="grid gap-4 md:grid-cols-3">
-                <Field label="Franquia" icon={<ShieldCheck className="h-4 w-4" />}>
-                  <input type="number" step="0.01" name="franquia" value={form.franquia} onChange={handleChange} className={inputClass} placeholder="5600" />
-                </Field>
+<div className="grid gap-4 md:grid-cols-3">
+  <Field label="Franquia" icon={<ShieldCheck className="h-4 w-4" />}>
+    <input
+      type="text"
+      name="franquia"
+      value={form.franquia}
+      onChange={(e) =>
+        setForm({
+          ...form,
+          franquia: maskMoeda(e.target.value),
+        })
+      }
+      className={inputClass}
+      placeholder="5.600,00"
+    />
+  </Field>
 
-                <Field label="Valor semanal padrão" icon={<Wallet className="h-4 w-4" />}>
-                  <input type="number" step="0.01" name="valorSemanalPadrao" value={form.valorSemanalPadrao} onChange={handleChange} className={inputClass} placeholder="645" />
-                </Field>
+  <Field label="Valor semanal padrão" icon={<Wallet className="h-4 w-4" />}>
+    <input
+      type="text"
+      name="valorSemanalPadrao"
+      value={form.valorSemanalPadrao}
+      onChange={(e) =>
+        setForm({
+          ...form,
+          valorSemanalPadrao: maskMoeda(e.target.value),
+        })
+      }
+      className={inputClass}
+      placeholder="645,00"
+    />
+  </Field>
 
-                <Field label="Caução padrão" icon={<Wallet className="h-4 w-4" />}>
-                  <input type="number" step="0.01" name="caucaoPadrao" value={form.caucaoPadrao} onChange={handleChange} className={inputClass} placeholder="1650" />
-                </Field>
-              </div>
+  <Field label="Caução padrão" icon={<Wallet className="h-4 w-4" />}>
+    <input
+      type="text"
+      name="caucaoPadrao"
+      value={form.caucaoPadrao}
+      onChange={(e) =>
+        setForm({
+          ...form,
+          caucaoPadrao: maskMoeda(e.target.value),
+        })
+      }
+      className={inputClass}
+      placeholder="1.650,00"
+    />
+  </Field>
+</div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+<div className="grid gap-4 md:grid-cols-2">
   <Field
     label="Seguradora / Assistência"
     icon={<Building2 className="h-4 w-4" />}
@@ -672,13 +784,17 @@ function abrirEdicao(veiculo) {
       type="text"
       name="telefoneAssistencia"
       value={form.telefoneAssistencia}
-      onChange={handleChange}
+      onChange={(e) =>
+        setForm({
+          ...form,
+          telefoneAssistencia: maskTelefone(e.target.value),
+        })
+      }
       className={inputClass}
-      placeholder="5521988887777"
+      placeholder="(21) 99999-9999"
     />
   </Field>
 </div>
-
               <Field label="Status" icon={<Wrench className="h-4 w-4" />}>
                 <select name="status" value={form.status} onChange={handleChange} className={inputClass}>
                   <option value="DISPONIVEL">DISPONÍVEL</option>
@@ -1119,3 +1235,5 @@ function abrirEdicao(veiculo) {
     </Layout>
   );
 }
+
+

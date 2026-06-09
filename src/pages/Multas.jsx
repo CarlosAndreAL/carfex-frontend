@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Layout from "../components/Layout";
 import PageWrapper from "../components/PageWrapper";
+import API_URL from "../config/api";
 
 const inputClass =
   "w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400/50 focus:ring-2 focus:ring-sky-400/20";
@@ -114,7 +115,7 @@ export default function Multas() {
 
   async function carregarMultas() {
     try {
-      const response = await fetch("https://carfex-backend.onrender.com/multas");
+      const response = await fetch(`${API_URL}/multas`);
       const data = await response.json();
       setMultas(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -147,7 +148,7 @@ export default function Multas() {
   try {
     setSalvando(true);
 
-    const response = await fetch("https://carfex-backend.onrender.com/multas", {
+    const response = await fetch(`${API_URL}/multas`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -198,7 +199,7 @@ export default function Multas() {
     if (!confirmar) return;
 
     try {
-      const response = await fetch(`https://carfex-backend.onrender.com/multas/${id}`, {
+      const response = await fetch(`${API_URL}/multas/${id}`, {
         method: "DELETE",
       });
 
@@ -520,3 +521,5 @@ export default function Multas() {
     </Layout>
   );
 }
+
+

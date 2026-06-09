@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Layout from "../components/Layout";
 import PageWrapper from "../components/PageWrapper";
+import API_URL from "../config/api";
 
 function aplicarMascaraCPF(valor) {
   return valor
@@ -137,7 +138,7 @@ export default function Clientes() {
 
   async function carregarClientes() {
     try {
-      const response = await fetch("https://carfex-backend.onrender.com/clientes");
+      const response = await fetch(`${API_URL}/clientes`);
       const data = await response.json();
       setClientes(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -233,7 +234,7 @@ telefone: aplicarMascaraTelefone(value),    }));
     try {
       setSalvando(true);
 
-      const response = await fetch("https://carfex-backend.onrender.com/clientes", {
+      const response = await fetch(`${API_URL}/clientes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -288,7 +289,7 @@ telefone: aplicarMascaraTelefone(value),    }));
     if (!confirmar) return;
 
     try {
-      const response = await fetch(`https://carfex-backend.onrender.com/clientes/${id}`, {
+      const response = await fetch(`${API_URL}/clientes/${id}`, {
         method: "DELETE",
       });
 
@@ -659,3 +660,5 @@ telefone: aplicarMascaraTelefone(value),    }));
     </Layout>
   );
 }
+
+

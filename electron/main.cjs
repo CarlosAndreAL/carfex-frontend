@@ -93,12 +93,11 @@ function createWindow() {
     shell.openExternal(url);
     return { action: "deny" };
   });
-
-  if (isDev) {
-    mainWindow.loadURL("https://carfex-frontend.onrender.com");
-  } else {
-    mainWindow.loadURL("https://carfex-frontend.onrender.com");
-  }
+if (isDev) {
+  mainWindow.loadURL("http://localhost:5173");
+} else {
+  mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
+}
 }
 
 app.whenReady().then(() => {

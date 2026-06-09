@@ -20,3 +20,4 @@ export default function PageWrapper({ children, maxWidth = "max-w-7xl" }) {
     </motion.div>
   );
 }
+

@@ -550,3 +550,4 @@ function InfoBox({ titulo, valor }) {
     </div>
   );
 }
+

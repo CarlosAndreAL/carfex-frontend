@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Layout from "../components/Layout";
 import PageWrapper from "../components/PageWrapper";
+import API_URL from "../config/api";
 
 function normalizarStatus(status) {
   return String(status || "")
@@ -198,10 +199,10 @@ export default function Dashboard() {
       try {
         const [resClientes, resVeiculos, resLocacoes, resMultas] =
           await Promise.all([
-            fetch("https://carfex-backend.onrender.com/clientes"),
-            fetch("https://carfex-backend.onrender.com/veiculos"),
-            fetch("https://carfex-backend.onrender.com/locacoes"),
-            fetch("https://carfex-backend.onrender.com/multas"),
+            fetch(`${API_URL}/clientes`),
+            fetch(`${API_URL}/veiculos`),
+            fetch(`${API_URL}/locacoes`),
+            fetch(`${API_URL}/multas`),
           ]);
 
         const clientesData = await resClientes.json().catch(() => []);
@@ -705,3 +706,5 @@ export default function Dashboard() {
     </Layout>
   );
 }
+
+
