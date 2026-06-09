@@ -180,6 +180,19 @@ function maskMoeda(valor) {
   });
 }
 
+function numeroParaMoedaInput(valor) {
+  if (valor === null || valor === undefined || valor === "") return "";
+
+  const numero = Number(valor);
+
+  if (!Number.isFinite(numero)) return "";
+
+  return numero.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 function moedaParaNumero(valor) {
   if (!valor) return 0;
 
@@ -272,11 +285,11 @@ function abrirEdicao(veiculo) {
     placa: veiculo.placa || "",
     renavam: veiculo.renavam || "",
     chassi: veiculo.chassi || "",
-    franquia: veiculo.franquia || "",
-    valorSemanalPadrao: veiculo.valorSemanalPadrao || "",
-    caucaoPadrao: veiculo.caucaoPadrao || "",
+    franquia: numeroParaMoedaInput(veiculo.franquia),
+    valorSemanalPadrao: numeroParaMoedaInput(veiculo.valorSemanalPadrao),
+    caucaoPadrao: numeroParaMoedaInput(veiculo.caucaoPadrao),
     seguradora: veiculo.seguradora || "",
-    telefoneAssistencia: veiculo.telefoneAssistencia || "",
+    telefoneAssistencia: maskTelefone(veiculo.telefoneAssistencia || ""),
     status: veiculo.status || "DISPONIVEL",
   });
 }
@@ -294,9 +307,18 @@ function abrirEdicao(veiculo) {
 
   setFormEditar((prev) => ({
     ...prev,
-    [name]: name === "placa"
-      ? value.toUpperCase()
-      : value,
+    [name]:
+      name === "placa"
+        ? value.toUpperCase()
+        : name === "renavam"
+        ? limitarNumeros(value, 11)
+        : name === "chassi"
+        ? maskChassi(value)
+        : name === "telefoneAssistencia"
+        ? maskTelefone(value)
+        : ["franquia", "valorSemanalPadrao", "caucaoPadrao"].includes(name)
+        ? maskMoeda(value)
+        : value,
   }));
 }
 
@@ -396,6 +418,16 @@ function abrirEdicao(veiculo) {
  async function salvarEdicaoVeiculo(e) {
   e.preventDefault();
 
+  if (
+    !formEditar.marca ||
+    !formEditar.modelo ||
+    !formEditar.placa ||
+    !formEditar.status
+  ) {
+    mostrarMensagem("Preencha marca, modelo, placa e status.");
+    return;
+  }
+
   try {
     const response = await fetch(
       `${API_URL}/veiculos/${editandoVeiculo.id}`,
@@ -405,20 +437,28 @@ function abrirEdicao(veiculo) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formEditar,
+          marca: formEditar.marca,
+          modelo: formEditar.modelo,
+          anoModelo: formEditar.anoModelo || null,
+          placa: formEditar.placa,
+          renavam: formEditar.renavam || null,
+          chassi: formEditar.chassi || null,
           franquia: formEditar.franquia
-            ? Number(formEditar.franquia)
+            ? moedaParaNumero(formEditar.franquia)
             : null,
 
           valorSemanalPadrao:
             formEditar.valorSemanalPadrao
-              ? Number(formEditar.valorSemanalPadrao)
+              ? moedaParaNumero(formEditar.valorSemanalPadrao)
               : null,
 
           caucaoPadrao:
             formEditar.caucaoPadrao
-              ? Number(formEditar.caucaoPadrao)
+              ? moedaParaNumero(formEditar.caucaoPadrao)
               : null,
+          seguradora: formEditar.seguradora || null,
+          telefoneAssistencia: formEditar.telefoneAssistencia || null,
+          status: formEditar.status,
         }),
       }
     );
@@ -1140,30 +1180,68 @@ function abrirEdicao(veiculo) {
           />
         </div>
 
+        <div className="grid gap-4 md:grid-cols-2">
+          <input
+            type="text"
+            name="anoModelo"
+            value={formEditar.anoModelo}
+            onChange={handleEditarChange}
+            placeholder="Ano/Modelo"
+            className={inputClass}
+          />
+
+          <input
+            type="text"
+            name="placa"
+            value={formEditar.placa}
+            onChange={handleEditarChange}
+            placeholder="Placa"
+            className={inputClass}
+          />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <input
+            type="text"
+            name="renavam"
+            value={formEditar.renavam}
+            onChange={handleEditarChange}
+            placeholder="RENAVAM"
+            className={inputClass}
+          />
+
+          <input
+            type="text"
+            name="chassi"
+            value={formEditar.chassi}
+            onChange={handleEditarChange}
+            placeholder="Chassi"
+            className={inputClass}
+            maxLength={17}
+          />
+        </div>
+
         <div className="grid gap-4 md:grid-cols-3">
           <input
-            type="number"
-            step="0.01"
+            type="text"
             name="franquia"
             value={formEditar.franquia}
             onChange={handleEditarChange}
-            placeholder="Franquia"
+            placeholder="5.600,00"
             className={inputClass}
           />
 
           <input
-            type="number"
-            step="0.01"
+            type="text"
             name="valorSemanalPadrao"
             value={formEditar.valorSemanalPadrao}
             onChange={handleEditarChange}
-            placeholder="Valor semanal"
+            placeholder="645,00"
             className={inputClass}
           />
 
           <input
-            type="number"
-            step="0.01"
+            type="text"
             name="caucaoPadrao"
             value={formEditar.caucaoPadrao}
             onChange={handleEditarChange}
