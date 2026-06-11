@@ -203,12 +203,20 @@ function moedaParaNumero(valor) {
       .replace(/[^\d.]/g, "")
   );
 }
-
 function maskTelefone(valor) {
   const n = somenteNumeros(valor).slice(0, 11);
 
+  if (!n) return "";
+
+  if (n.startsWith("0800")) {
+    if (n.length <= 4) return n;
+    if (n.length <= 7) return `${n.slice(0, 4)}-${n.slice(4)}`;
+    return `${n.slice(0, 4)}-${n.slice(4, 7)}-${n.slice(7, 11)}`;
+  }
+
   if (n.length <= 2) return n;
-  if (n.length <= 7) return `(${n.slice(0, 2)}) ${n.slice(2)}`;
+  if (n.length <= 6) return `(${n.slice(0, 2)}) ${n.slice(2)}`;
+  if (n.length <= 10) return `(${n.slice(0, 2)}) ${n.slice(2, 6)}-${n.slice(6)}`;
 
   return `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`;
 }
