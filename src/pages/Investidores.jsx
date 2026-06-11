@@ -5,6 +5,7 @@ import {
   BriefcaseBusiness,
   Building2,
   CarFront,
+  Search,
   CircleCheckBig,
   CircleX,
   Link2,
@@ -74,6 +75,7 @@ export default function Investidores() {
   const [veiculos, setVeiculos] = useState([]);
   const [investidorId, setInvestidorId] = useState("");
   const [veiculoId, setVeiculoId] = useState("");
+  const [buscaVeiculo, setBuscaVeiculo] = useState("");
   const [mensagem, setMensagem] = useState("");
   const [tipoMensagem, setTipoMensagem] = useState("info");
   const [carregando, setCarregando] = useState(true);
@@ -250,6 +252,16 @@ export default function Investidores() {
     () => veiculos.filter((veiculo) => !veiculo.investidorId),
     [veiculos]
   );
+
+  const veiculosFiltrados = useMemo(
+  () =>
+    veiculosLivres.filter((v) =>
+      `${v.marca} ${v.modelo} ${v.placa}`
+        .toLowerCase()
+        .includes(buscaVeiculo.toLowerCase())
+    ),
+  [veiculosLivres, buscaVeiculo]
+);
 
   return (
     <Layout title="Investidores">
@@ -472,13 +484,25 @@ export default function Investidores() {
                 ))}
               </select>
 
+              <div className="relative mb-3">
+  <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
+  <input
+    type="text"
+    placeholder="Pesquisar placa, marca ou modelo..."
+    value={buscaVeiculo}
+    onChange={(e) => setBuscaVeiculo(e.target.value)}
+    className="w-full rounded-2xl border border-white/10 bg-slate-900/70 py-3 pl-11 pr-4 text-white"
+  />
+</div>
+
               <select
                 value={veiculoId}
                 onChange={(e) => setVeiculoId(e.target.value)}
                 className={selectClass}
               >
                 <option value="">Selecione o veículo</option>
-                {veiculosLivres.map((veiculo) => (
+                {veiculosFiltrados.map((veiculo) => (
                   <option key={veiculo.id} value={veiculo.id}>
                     {veiculo.marca} {veiculo.modelo} - {veiculo.placa}
                   </option>
@@ -632,7 +656,7 @@ async function atualizarPercentualEmpresa(id, percentualEmpresa) {
             </p>
 
             <div className="flex flex-wrap gap-2">
-              {investidor.veiculos.map((veiculo) => (
+              {investidor.veiculos?.map((veiculo) => (
                 <span
                   key={veiculo.id}
                   className="rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1 text-xs text-sky-200"
