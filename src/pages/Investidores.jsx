@@ -71,6 +71,38 @@ function StatusBadge({ status }) {
   );
 }
 
+function somenteNumeros(valor) {
+  return String(valor || "").replace(/\D/g, "");
+}
+
+function maskMoeda(valor) {
+  const numeros = somenteNumeros(valor);
+
+  if (!numeros) return "";
+
+  return Number(numeros).toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function moedaParaNumero(valor) {
+  if (!valor) return 0;
+
+  return Number(
+    String(valor).replace(/\./g, "").replace(",", ".")
+  );
+}
+
+function numeroParaMoedaInput(valor) {
+  if (valor === null || valor === undefined || valor === "") return "";
+
+  return Number(valor).toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 export default function Investidores() {
   const [investidores, setInvestidores] = useState([]);
   const [veiculos, setVeiculos] = useState([]);
@@ -247,7 +279,7 @@ export default function Investidores() {
       email: investidor.email || "",
       telefone: investidor.telefone || "",
       cpfCnpj: investidor.cpfCnpj || "",
-      investimentoTotal: investidor.investimentoTotal ?? "",
+      investimentoTotal: numeroParaMoedaInput(investidor.investimentoTotal),
       status: investidor.status || "ATIVO",
     });
   }
@@ -273,8 +305,8 @@ export default function Investidores() {
             email: formEditarInvestidor.email,
             telefone: formEditarInvestidor.telefone,
             cpfCnpj: formEditarInvestidor.cpfCnpj,
-            investimentoTotal: Number(
-              formEditarInvestidor.investimentoTotal || 0
+            investimentoTotal: moedaParaNumero(
+              formEditarInvestidor.investimentoTotal
             ),
             status: formEditarInvestidor.status,
           }),
@@ -903,16 +935,16 @@ async function atualizarPercentualEmpresa(id, percentualEmpresa) {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <input
-                  type="number"
+                  type="text"
                   name="investimentoTotal"
                   value={formEditarInvestidor.investimentoTotal}
                   onChange={(e) =>
                     setFormEditarInvestidor((prev) => ({
                       ...prev,
-                      [e.target.name]: e.target.value,
+                      investimentoTotal: maskMoeda(e.target.value),
                     }))
                   }
-                  placeholder="Valor investido (R$)"
+                  placeholder="Valor investido"
                   className={inputClass}
                 />
 
