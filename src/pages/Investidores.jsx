@@ -12,6 +12,7 @@ import {
   Mail,
   Phone,
   ShieldCheck,
+  Pencil,
   Wallet,
   Trash2,
   UserRound,
@@ -79,6 +80,7 @@ export default function Investidores() {
   const [mensagem, setMensagem] = useState("");
   const [tipoMensagem, setTipoMensagem] = useState("info");
   const [carregando, setCarregando] = useState(true);
+  const [editandoInvestidor, setEditandoInvestidor] = useState(null);
 
   const [form, setForm] = useState({
     nome: "",
@@ -88,6 +90,15 @@ export default function Investidores() {
     senha: "",
     status: "ATIVO",
     investimentoTotal: "",
+  });
+
+  const [formEditarInvestidor, setFormEditarInvestidor] = useState({
+    nome: "",
+    email: "",
+    telefone: "",
+    cpfCnpj: "",
+    investimentoTotal: "",
+    status: "ATIVO",
   });
 
   async function carregarDados() {
@@ -226,6 +237,64 @@ export default function Investidores() {
       console.error(error);
       setTipoMensagem("erro");
       setMensagem(error.message || "Erro ao excluir investidor");
+    }
+  }
+
+  function abrirEdicaoInvestidor(investidor) {
+    setEditandoInvestidor(investidor);
+    setFormEditarInvestidor({
+      nome: investidor.nome || "",
+      email: investidor.email || "",
+      telefone: investidor.telefone || "",
+      cpfCnpj: investidor.cpfCnpj || "",
+      investimentoTotal: investidor.investimentoTotal ?? "",
+      status: investidor.status || "ATIVO",
+    });
+  }
+
+  async function salvarEdicaoInvestidor(e) {
+    e.preventDefault();
+
+    if (!editandoInvestidor) return;
+
+    try {
+      setMensagem("");
+      setTipoMensagem("info");
+
+      const response = await fetch(
+        `${API_URL}/investidores/${editandoInvestidor.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nome: formEditarInvestidor.nome,
+            email: formEditarInvestidor.email,
+            telefone: formEditarInvestidor.telefone,
+            cpfCnpj: formEditarInvestidor.cpfCnpj,
+            investimentoTotal: Number(
+              formEditarInvestidor.investimentoTotal || 0
+            ),
+            status: formEditarInvestidor.status,
+          }),
+        }
+      );
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.erro || "Erro ao editar investidor");
+      }
+
+      setEditandoInvestidor(null);
+      await carregarDados();
+      setTipoMensagem("sucesso");
+      setMensagem("Investidor atualizado com sucesso.");
+    } catch (error) {
+      console.error(error);
+      setTipoMensagem("erro");
+      setMensagem(error.message || "Erro ao editar investidor");
     }
   }
 
@@ -715,7 +784,16 @@ async function atualizarPercentualEmpresa(id, percentualEmpresa) {
   </p>
 </div>
 
-        <div className="pt-1">
+        <div className="flex flex-wrap gap-3 pt-1">
+          <button
+            type="button"
+            onClick={() => abrirEdicaoInvestidor(investidor)}
+            className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-400"
+          >
+            <Pencil className="h-4 w-4" />
+            Editar
+          </button>
+
           <button
             type="button"
             onClick={() => excluirInvestidor(investidor.id)}
@@ -733,6 +811,147 @@ async function atualizarPercentualEmpresa(id, percentualEmpresa) {
           )}
         </section>
       </div>
+
+      {editandoInvestidor && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="w-full max-w-3xl rounded-3xl border border-white/10 bg-slate-950 p-6 shadow-2xl"
+          >
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-white">
+                  Editar investidor
+                </h2>
+
+                <p className="text-sm text-slate-400">
+                  Atualize os dados cadastrais e financeiros do investidor.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setEditandoInvestidor(null)}
+                className="rounded-full bg-white/5 p-2 text-slate-400 hover:bg-red-500/10 hover:text-red-400"
+                aria-label="Fechar edição"
+              >
+                X
+              </button>
+            </div>
+
+            <form onSubmit={salvarEdicaoInvestidor} className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <input
+                  type="text"
+                  name="nome"
+                  value={formEditarInvestidor.nome}
+                  onChange={(e) =>
+                    setFormEditarInvestidor((prev) => ({
+                      ...prev,
+                      [e.target.name]: e.target.value,
+                    }))
+                  }
+                  placeholder="Nome"
+                  className={inputClass}
+                />
+
+                <input
+                  type="email"
+                  name="email"
+                  value={formEditarInvestidor.email}
+                  onChange={(e) =>
+                    setFormEditarInvestidor((prev) => ({
+                      ...prev,
+                      [e.target.name]: e.target.value,
+                    }))
+                  }
+                  placeholder="Email"
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <input
+                  type="text"
+                  name="telefone"
+                  value={formEditarInvestidor.telefone}
+                  onChange={(e) =>
+                    setFormEditarInvestidor((prev) => ({
+                      ...prev,
+                      [e.target.name]: e.target.value,
+                    }))
+                  }
+                  placeholder="Telefone"
+                  className={inputClass}
+                />
+
+                <input
+                  type="text"
+                  name="cpfCnpj"
+                  value={formEditarInvestidor.cpfCnpj}
+                  onChange={(e) =>
+                    setFormEditarInvestidor((prev) => ({
+                      ...prev,
+                      [e.target.name]: e.target.value,
+                    }))
+                  }
+                  placeholder="CPF ou CNPJ"
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <input
+                  type="number"
+                  name="investimentoTotal"
+                  value={formEditarInvestidor.investimentoTotal}
+                  onChange={(e) =>
+                    setFormEditarInvestidor((prev) => ({
+                      ...prev,
+                      [e.target.name]: e.target.value,
+                    }))
+                  }
+                  placeholder="Valor investido (R$)"
+                  className={inputClass}
+                />
+
+                <select
+                  name="status"
+                  value={formEditarInvestidor.status}
+                  onChange={(e) =>
+                    setFormEditarInvestidor((prev) => ({
+                      ...prev,
+                      [e.target.name]: e.target.value,
+                    }))
+                  }
+                  className={selectClass}
+                >
+                  <option value="ATIVO">ATIVO</option>
+                  <option value="INATIVO">INATIVO</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditandoInvestidor(null)}
+                  className="rounded-2xl border border-white/10 px-5 py-3 text-sm text-slate-300 transition hover:bg-white/5"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-400"
+                >
+                  Salvar alterações
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </Layout>
   );
 }
