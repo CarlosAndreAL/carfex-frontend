@@ -211,6 +211,40 @@ export default function Motoristas() {
     }
   }
 
+async function renovarContrato(motorista) {
+  if (!motorista.locacaoId) {
+    alert("Esse motorista não possui locação ativa.");
+    return;
+  }
+
+  const confirmar = window.confirm(
+    `Renovar automaticamente o contrato de ${motorista.nome}?`
+  );
+
+  if (!confirmar) return;
+
+  try {
+    const response = await fetch(
+      `${API_URL}/locacoes/${motorista.locacaoId}/renovar`,
+      {
+        method: "POST",
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.erro);
+    }
+
+    alert("Contrato renovado com sucesso!");
+
+    carregarMotoristas();
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
   return (
     <Layout title="Motoristas">
       <PageWrapper maxWidth="max-w-[1450px]">
@@ -361,6 +395,13 @@ export default function Motoristas() {
                           <KeyRound className="h-4 w-4" />
                           Redefinir senha
                         </button>
+
+                        <button
+  onClick={() => renovarContrato(motorista)}
+  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm font-black text-emerald-200 transition hover:-translate-y-0.5 hover:bg-emerald-500/20"
+>
+  Renovar contrato
+</button>
 
                         <button
                           onClick={() => alterarStatus(motorista)}

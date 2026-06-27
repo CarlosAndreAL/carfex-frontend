@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Activity,
   BadgeDollarSign,
+  Search,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Layout from "../components/Layout";
@@ -129,6 +130,8 @@ export default function Locacoes() {
   const [tipoMensagem, setTipoMensagem] = useState("erro");
   const [salvando, setSalvando] = useState(false);
   const [filtroBusca, setFiltroBusca] = useState("");
+  const [buscaCliente, setBuscaCliente] = useState("");
+  const [buscaVeiculo, setBuscaVeiculo] = useState("");
 
   const [form, setForm] = useState({
     clienteId: "",
@@ -205,6 +208,30 @@ export default function Locacoes() {
     return status === "DISPONIVEL";
   });
 }, [veiculos]);
+
+const clientesFiltrados = useMemo(() => {
+  const termo = buscaCliente.toLowerCase().trim();
+
+  if (!termo) return clientes;
+
+  return clientes.filter((cliente) =>
+    `${cliente.nome || ""} ${cliente.cpf || ""} ${cliente.telefone || ""}`
+      .toLowerCase()
+      .includes(termo)
+  );
+}, [clientes, buscaCliente]);
+
+const veiculosFiltrados = useMemo(() => {
+  const termo = buscaVeiculo.toLowerCase().trim();
+
+  if (!termo) return veiculosDisponiveis;
+
+  return veiculosDisponiveis.filter((veiculo) =>
+    `${veiculo.marca || ""} ${veiculo.modelo || ""} ${veiculo.placa || ""}`
+      .toLowerCase()
+      .includes(termo)
+  );
+}, [veiculosDisponiveis, buscaVeiculo]);
 
   const clienteSelecionado = useMemo(() => {
     return clientes.find((c) => c.id === Number(form.clienteId));
@@ -314,6 +341,7 @@ export default function Locacoes() {
           tipoContrato: form.tipoContrato,
           tempoContrato: form.tempoContrato,
           dataInicio: form.dataInicio,
+          dataInicioCobranca: form.dataInicioCobranca || null,
           dataFim: form.dataFim,
           dataAssinatura: form.dataAssinatura || null,
           cidadeAssinatura: form.cidadeAssinatura || null,
@@ -549,28 +577,60 @@ function baixarContratoPdf(id) {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Field icon={<User className="h-4 w-4" />} label="Cliente">
-                <select name="clienteId" value={form.clienteId} onChange={handleChange} className={inputClass}>
-                  <option value="">Selecione o cliente</option>
-                  {clientes.map((cliente) => (
-                    <option key={cliente.id} value={cliente.id}>
-                      {cliente.nome}
-                    </option>
-                  ))}
-                </select>
-              </Field>
+  <Field icon={<User className="h-4 w-4" />} label="Cliente">
+    <div className="relative mb-3">
+      <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <input
+        type="text"
+        value={buscaCliente}
+        onChange={(e) => setBuscaCliente(e.target.value)}
+        placeholder="Pesquisar cliente por nome, CPF ou telefone..."
+        className={`${inputClass} pl-11`}
+      />
+    </div>
 
-              <Field icon={<Car className="h-4 w-4" />} label="Veículo">
-                <select name="veiculoId" value={form.veiculoId} onChange={handleVeiculoChange} className={inputClass}>
-                  <option value="">Selecione o veículo</option>
-                  {veiculosDisponiveis.map((veiculo) => (
-                    <option key={veiculo.id} value={veiculo.id}>
-                      {[veiculo.marca, veiculo.modelo].filter(Boolean).join(" ")} - {veiculo.placa}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
+    <select
+      name="clienteId"
+      value={form.clienteId}
+      onChange={handleChange}
+      className={inputClass}
+    >
+      <option value="">Selecione o cliente</option>
+      {clientesFiltrados.map((cliente) => (
+        <option key={cliente.id} value={cliente.id}>
+          {cliente.nome}
+        </option>
+      ))}
+    </select>
+  </Field>
+
+  <Field icon={<Car className="h-4 w-4" />} label="Veículo">
+    <div className="relative mb-3">
+      <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <input
+        type="text"
+        value={buscaVeiculo}
+        onChange={(e) => setBuscaVeiculo(e.target.value)}
+        placeholder="Pesquisar veículo por placa, marca ou modelo..."
+        className={`${inputClass} pl-11`}
+      />
+    </div>
+
+    <select
+      name="veiculoId"
+      value={form.veiculoId}
+      onChange={handleVeiculoChange}
+      className={inputClass}
+    >
+      <option value="">Selecione o veículo</option>
+      {veiculosFiltrados.map((veiculo) => (
+        <option key={veiculo.id} value={veiculo.id}>
+          {[veiculo.marca, veiculo.modelo].filter(Boolean).join(" ")} - {veiculo.placa}
+        </option>
+      ))}
+    </select>
+  </Field>
+</div>
 
             <div className="mt-5 grid gap-4 md:grid-cols-3">
               <Field icon={<FileText className="h-4 w-4" />} label="Número do contrato">
