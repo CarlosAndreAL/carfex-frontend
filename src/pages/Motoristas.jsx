@@ -384,6 +384,17 @@ async function renovarContrato(motorista) {
                           <Info icon={<CalendarDays className="h-4 w-4" />} label="Cadastro" value={dataBR(motorista.createdAt)} />
                           <Info icon={<Clock3 className="h-4 w-4" />} label="Último acesso" value={dataHoraBR(motorista.ultimoLogin)} />
                           <Info icon={<Wallet className="h-4 w-4" />} label="Em aberto" value={brl(motorista.totalAberto)} />
+                          <Info
+  icon={<CalendarDays className="h-4 w-4" />}
+  label="Contrato"
+  value={motorista.tempoContrato === "3_MESES" ? "3 meses" : motorista.tempoContrato === "6_MESES" ? "6 meses" : motorista.tempoContrato === "12_MESES" ? "12 meses" : "-"}
+/>
+
+<Info
+  icon={<CalendarDays className="h-4 w-4" />}
+  label="Próxima renovação"
+  value={dataBR(motorista.dataFimContrato)}
+/>
                         </div>
                       </div>
 
