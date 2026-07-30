@@ -12,6 +12,7 @@ import {
   BarChart3,
   IdCard,
   ShieldCheck,
+  Bot, 
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
@@ -63,6 +64,7 @@ export default function Sidebar({ mobile = false, onNavigate = null }) {
     },
     { to: "/investidores", label: "Investidores", icon: Landmark },
     { to: "/repasses-investidores", label: "Repasses", icon: Wallet },
+    { to: "/barbara", label: "Bárbara IA", icon: Bot, adminOnly: true },
     { to: "/relatorios", label: "Financeiro", icon: BarChart3, adminOnly: true },
   ];
 

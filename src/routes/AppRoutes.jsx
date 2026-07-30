@@ -5,6 +5,7 @@ import {
   Route,
 } from "react-router-dom";
 
+import BarbaraIA from "../pages/BarbaraIA";
 import Motoristas from "../pages/Motoristas";
 import PagamentosMotorista from "../pages/PagamentosMotorista";
 import Login from "../pages/Login";
@@ -103,6 +104,15 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+  path="/barbara"
+  element={
+    <ProtectedRoute>
+      <BarbaraIA />
+    </ProtectedRoute>
+  }
+/>
 
         <Route path="/investidor/login" element={<InvestidorLogin />} />
 
